@@ -4,8 +4,8 @@ import type { LayoutServerLoad } from './$types';
 import { createClient } from '@supabase/supabase-js';
 
 export const load: LayoutServerLoad = async ({ cookies, url }) => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
   if (url.pathname === '/login') return {};
 
