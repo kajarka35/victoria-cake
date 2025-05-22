@@ -20,7 +20,12 @@
   function confirmarEliminacion(id: number) {
     eliminarId = id;
     showConfirm = true;
-  }
+    // Forzar scroll al centro del viewport
+  setTimeout(() => {
+    const modal = document.getElementById('modal-confirm');
+    modal?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 50);
+}
   async function eliminarProducto() {
   if (eliminarId !== null) {
     try {
@@ -137,25 +142,29 @@
     </button>
   </div>
 
-  {#if showConfirm}
-    <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50" transition:fly={{ y:20, duration:300 }}>
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-sm space-y-4 text-center">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-white">¿Eliminar producto?</h2>
-        <p class="text-gray-600 dark:text-gray-400">¿Estás seguro? Esta acción no se puede deshacer.</p>
-        <div class="flex justify-center gap-4 mt-4">
-          <button on:click={cancelarEliminacion}
-                  class="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-            Cancelar
-          </button>
-          <button on:click={eliminarProducto}
-                  class="px-4 py-2 rounded-full bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 text-white font-semibold transition">
-            Eliminar
-          </button>
-        </div>
+</section>
+
+{#if showConfirm}
+  <div
+    class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
+    transition:fly={{ y: 20, duration: 300 }}
+  >
+    <div id="modal-confirm" class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto text-center space-y-4">
+      <h2 class="text-xl font-semibold text-gray-800 dark:text-white">¿Eliminar producto?</h2>
+      <p class="text-gray-600 dark:text-gray-400">¿Estás seguro? Esta acción no se puede deshacer.</p>
+      <div class="flex justify-center gap-4 mt-4">
+        <button on:click={cancelarEliminacion}
+          class="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          Cancelar
+        </button>
+        <button on:click={eliminarProducto}
+          class="px-4 py-2 rounded-full bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 text-white font-semibold transition">
+          Eliminar
+        </button>
       </div>
     </div>
-  {/if}
-</section>
+  </div>
+{/if}
 {/if}
 
 <style>
