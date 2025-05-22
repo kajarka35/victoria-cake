@@ -12,6 +12,8 @@
   let darkMode = false;
   let show = false;
   let cargando = true;
+  let error: string = '';
+
 
   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -20,11 +22,44 @@
     showConfirm = true;
   }
   async function eliminarProducto() {
-    if (eliminarId !== null) {
-      await supabase.from('productos').delete().eq('id', eliminarId);
+  if (eliminarId !== null) {
+    try {
+      // 1. Obtener el producto para saber el path de la imagen
+      const { data: producto, error: fetchError } = await supabase
+        .from('productos')
+        .select('imagen_path')
+        .eq('id', eliminarId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // 2. Eliminar la imagen del storage (si tiene imagen_path)
+      if (producto?.imagen_path) {
+        const { error: removeError } = await supabase
+          .storage
+          .from('imagenes-productos')
+          .remove([producto.imagen_path]);
+
+        if (removeError) console.warn('⚠️ Imagen no pudo ser eliminada del Storage:', removeError.message);
+      }
+
+      // 3. Eliminar el producto de la tabla
+      const { error: deleteError } = await supabase
+        .from('productos')
+        .delete()
+        .eq('id', eliminarId);
+
+      if (deleteError) throw deleteError;
+
+      // 4. Refrescar
       location.reload();
+    } catch (err) {
+      console.error('❌ Error eliminando producto:', err.message || err);
+      error = 'No se pudo eliminar el producto. Intenta nuevamente.';
     }
   }
+}
+
   function cancelarEliminacion() {
     eliminarId = null;
     showConfirm = false;
