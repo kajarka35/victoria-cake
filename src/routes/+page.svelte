@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fly, fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
+	import VictoriaCakeImageComponent from '$lib/components/VictoriaCakeImageComponent.svelte';
 
 	let show = false;
 	onMount(() => {
@@ -34,28 +35,27 @@
 
 		<!-- Hero Section -->
 		<section
-			class="relative z-10 flex flex-col-reverse items-center justify-between gap-16 px-6 py-24 md:flex-row md:px-24"
+			class="relative z-10 flex flex-col-reverse items-center justify-between gap-12 px-4 pt-16 pb-10 sm:gap-20 md:flex-row md:px-20 md:pt-24 md:pb-20"
 		>
 			<!-- Texto -->
-			<div class="space-y-8 text-center md:w-1/2 md:text-left" in:fly={{ x: -40, duration: 600 }}>
-				<h1 class="text-5xl leading-tight font-black tracking-tight drop-shadow-md md:text-6xl">
-					Endulza tu vida con <span class="rounded-xl bg-white/50 px-2 py-1 text-pink-500"
-						>Victoria Cake</span
-					>
+			<div class="space-y-6 text-center md:w-1/2 md:text-left" in:fly={{ x: -40, duration: 600 }}>
+				<h1 class="text-3xl leading-snug font-extrabold tracking-tight drop-shadow-md sm:text-5xl md:text-6xl">
+					Endulza tu vida con <span class="rounded-xl bg-white/50 px-2 py-1 text-pink-500">
+						Victoria Cake</span>
 				</h1>
-				<p class="mx-auto max-w-md text-lg text-gray-600 md:mx-0 md:text-xl">
+				<p class="mx-auto max-w-md text-sm text-gray-600 sm:text-base md:mx-0 md:text-lg">
 					Pasteles artesanales con diseño, sabor y magia. Celebra tus momentos con dulzura y estilo.
 				</p>
-				<div class="flex flex-col justify-center gap-4 sm:flex-row md:justify-start">
+				<div class="flex flex-col items-center gap-3 sm:flex-row md:justify-start">
 					<a
 						href="/catalogo"
-						class="transform rounded-full bg-pink-500 px-8 py-4 text-lg font-semibold text-white shadow-lg transition duration-300 hover:scale-105 hover:bg-pink-600 hover:shadow-2xl"
+						class="rounded-full bg-pink-500 px-6 py-3 text-base font-semibold text-white shadow-md transition duration-300 hover:scale-105 hover:bg-pink-600 hover:shadow-lg"
 					>
 						🎂 Ver Catálogo
 					</a>
 					<a
 						href="/contacto"
-						class="rounded-full border-2 border-pink-500 px-8 py-4 text-lg font-semibold text-pink-500 transition-all duration-300 hover:scale-105 hover:bg-pink-100"
+						class="rounded-full border-2 border-pink-500 px-6 py-3 text-base font-semibold text-pink-500 transition-all duration-300 hover:scale-105 hover:bg-pink-100"
 					>
 						📞 Contáctanos
 					</a>
@@ -63,23 +63,8 @@
 			</div>
 
 			<!-- Imagen -->
-			<div class="relative md:w-1/2" in:fly={{ x: 40, duration: 600 }}>
-				<div class="group relative mx-auto w-full max-w-md overflow-hidden rounded-3xl shadow-2xl">
-					<img
-						src="https://i.pinimg.com/originals/4c/5e/21/4c5e215b1269487111c5a5ae5b1821dd.jpg"
-						alt="Pastel decorado"
-						class="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-105"
-						loading="lazy"
-					/>
-					<!-- Botón oculto (se ve igual, pero es clickeable) -->
-					<div
-						class="absolute bottom-4 left-4 cursor-pointer rounded-full bg-white/90 px-5 py-2 text-sm font-medium text-pink-600 shadow-md backdrop-blur-md select-none"
-						title="Victoria Cake"
-						on:click={() => (window.location.href = '/login')}
-					>
-						Hecho con amor ♥
-					</div>
-				</div>
+			<div class="relative w-full max-w-[280px] sm:max-w-sm md:max-w-md md:w-1/2" in:fly={{ x: 40, duration: 600 }}>
+				<VictoriaCakeImageComponent onLoginClick={() => window.location.href = '/login'} />
 			</div>
 		</section>
 	</div>
