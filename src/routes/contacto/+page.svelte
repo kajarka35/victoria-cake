@@ -38,8 +38,8 @@
       <a href="tel:+573126589467" class="flex items-center gap-4 px-5 py-4 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 shadow hover:shadow-lg hover:scale-105 transition duration-300">
         📞 Llamanos: <span class="font-semibold">(57) 312 658 946 7</span>
       </a>
-      <a href="https://www.instagram.com/victoriacake" target="_blank" class="flex items-center gap-4 px-5 py-4 rounded-2xl bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300 shadow hover:shadow-lg hover:scale-105 transition duration-300">
-        🦋 Instagram: <span class="font-semibold">@victoriacake</span>
+      <a href="https://www.instagram.com/victoriacake.vc" target="_blank" class="flex items-center gap-4 px-5 py-4 rounded-2xl bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-300 shadow hover:shadow-lg hover:scale-105 transition duration-300">
+        🦋 Instagram: <span class="font-semibold">@victoriacake.vc</span>
       </a>
     </div>
 
