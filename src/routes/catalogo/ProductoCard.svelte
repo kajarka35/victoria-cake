@@ -36,14 +36,16 @@
   on:click={() => dispatch('toggle')}
 >
   <!-- Imagen -->
-  <div class="relative overflow-hidden">
-    <img
-      src={producto.imagen}
-      alt={producto.nombre}
-      class="w-full h-48 sm:h-60 object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-      loading="lazy"
-    />
-  </div>
+<!-- Dentro de ProductoCard.svelte -->
+<div class="relative w-full aspect-[4/3] bg-white dark:bg-gray-800 rounded-t-3xl overflow-hidden flex items-center justify-center">
+  <img
+    src={producto.imagen}
+    alt={producto.nombre}
+    class="object-contain w-full h-full p-2 transition-transform duration-500 ease-in-out group-hover:scale-105"
+    loading="lazy"
+  />
+</div>
+
 
   <!-- Sticky botón favorito con retroalimentación visual -->
   <button
