@@ -88,85 +88,72 @@
 </svelte:head>
 
 {#if show}
-	<!-- Barra de búsqueda flotante -->
-	<div
-		class="sticky top-0 z-[100] border-b border-pink-200 bg-white/90 px-4 py-4 shadow-sm backdrop-blur-md dark:border-pink-500 dark:bg-gray-900/90"
-	>
-		<div class="mx-auto flex max-w-7xl justify-center">
+	<!-- Barra de búsqueda -->
+	<div class="sticky top-0 z-[100] bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-pink-200 dark:border-pink-500 px-4 py-4 shadow-sm">
+		<div class="max-w-7xl mx-auto flex justify-center">
 			<input
 				type="text"
 				placeholder="Buscar pastel..."
-				class="w-full max-w-md rounded-2xl border border-pink-300 px-4 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 dark:bg-gray-900 dark:text-white"
+				class="w-full max-w-md py-2 px-4 rounded-2xl border border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 text-sm shadow-sm dark:bg-gray-900 dark:text-white"
 				bind:value={search}
 			/>
 		</div>
 	</div>
 
-	<section
-		class="animate-fade-in relative min-h-screen bg-gradient-to-b from-pink-100 via-white to-white px-4 + py-12 sm:py-16 lg:py-20 font-[Inter,sans-serif] sm:px-6 lg:px-24 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900"
-	>
-		<!-- Fondo decorativo -->
-		<div
-			class="absolute -left-10 -top-10 h-96 w-96 animate-pulse rounded-full bg-pink-300 opacity-20 blur-3xl"
-		></div>
-		<div
-			class="absolute bottom-0 right-0 h-72 w-72 animate-pulse rounded-full bg-purple-200 opacity-20 blur-2xl delay-300"
-		></div>
+	<!-- Catálogo -->
+	<section class="relative bg-gradient-to-b from-pink-100 via-white to-white dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 animate-fade-in">
+		<div class="absolute -top-10 -left-10 w-96 h-96 bg-pink-300 rounded-full opacity-20 blur-3xl animate-pulse"></div>
+		<div class="absolute bottom-0 right-0 w-72 h-72 bg-purple-200 rounded-full opacity-20 blur-2xl animate-pulse delay-300"></div>
 
-		<div class="relative z-10 mx-auto mt-10 max-w-7xl space-y-6 text-center">
-			<h2
-				class="animate-fade-in text-3xl font-extrabold tracking-tight text-pink-600 drop-shadow-md sm:text-4xl lg:text-5xl dark:text-pink-400"
-			>
-				Nuestros Productos
-			</h2>
-			<p
-				class="animate-fade-in mx-auto max-w-2xl text-base text-gray-600 delay-200 sm:text-lg dark:text-gray-300"
-			>
-				Descubre el arte pastelero: diseño, sabor y dedicación en cada creación.
-			</p>
-		</div>
-
-		<div
-			class="mt-14 grid grid-cols-[repeat(auto-fit,_minmax(250px,_1fr))] justify-items-center gap-x-6 gap-y-10"
-		>
-			{#if cargando}
-				{#each Array(6) as _, i}
-					<div class="h-80 animate-pulse rounded-2xl bg-white/70 dark:bg-gray-800/60"></div>
-				{/each}
-			{:else if productosFiltrados.length === 0}
-				<p class="col-span-full mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-					No se encontraron productos.
+		<div class="container mx-auto px-4 sm:px-6 lg:px-12 py-12 sm:py-16 lg:py-20">
+			<div class="text-center space-y-6 relative z-10">
+				<h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-pink-600 dark:text-pink-400 tracking-tight drop-shadow-md animate-fade-in">
+					Nuestros Productos
+				</h2>
+				<p class="text-gray-600 dark:text-gray-300 text-base sm:text-lg max-w-2xl mx-auto animate-fade-in delay-200">
+					Descubre el arte pastelero: diseño, sabor y dedicación en cada creación.
 				</p>
-			{:else}
-				{#each productosFiltrados as producto, i (producto.id)}
-					<div class="fade-up" style="--delay: {i * 70}ms">
-						<ProductoCard
-							{producto}
-							{activeCard}
-							index={i}
-							on:abrirModal={() => abrirModal(producto)}
-							on:pedirWhatsApp={() => pedirPorWhatsApp(producto)}
-							on:toggle={() => toggleCard(producto.id)}
-						/>
-					</div>
-				{/each}
-			{/if}
+			</div>
+
+			<!-- Grilla -->
+			<div class="mt-14 grid justify-items-center gap-y-10 gap-x-6 grid-cols-[repeat(auto-fit,_minmax(250px,_1fr))]">
+				{#if cargando}
+					{#each Array(6) as _, i}
+						<div class="animate-pulse h-80 rounded-2xl bg-white/70 dark:bg-gray-800/60 w-full max-w-sm"></div>
+					{/each}
+				{:else if productosFiltrados.length === 0}
+					<p class="text-center col-span-full text-gray-500 dark:text-gray-400 text-sm mt-8">No se encontraron productos.</p>
+				{:else}
+					{#each productosFiltrados as producto, i (producto.id)}
+						<div class="fade-up" style="--delay: {i * 70}ms">
+							<ProductoCard
+								{producto}
+								{activeCard}
+								index={i}
+								on:abrirModal={() => abrirModal(producto)}
+								on:pedirWhatsApp={() => pedirPorWhatsApp(producto)}
+								on:toggle={() => toggleCard(producto.id)}
+							/>
+						</div>
+					{/each}
+				{/if}
+			</div>
 		</div>
 	</section>
 {/if}
 
-<!-- Botones SIEMPRE visibles para TODAS las resoluciones -->
-<div class="pointer-events-auto fixed bottom-5 right-5 z-[999] flex flex-col items-end gap-3">
+<!-- Botones flotantes -->
+<div class="fixed bottom-5 right-5 z-[999] flex flex-col gap-3 items-end pointer-events-auto">
 	<button
 		on:click={irInicio}
-		class="rounded-full border border-pink-200 bg-white/60 p-3 text-pink-600 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-105 dark:border-pink-400 dark:bg-gray-800/60 dark:text-white"
+		class="p-3 rounded-full backdrop-blur-md bg-white/60 dark:bg-gray-800/60 text-pink-600 dark:text-white border border-pink-200 dark:border-pink-400 shadow-xl hover:scale-105 transition-all duration-300"
 		aria-label="Inicio"
 	>
 		🏠
 	</button>
 	<button
 		on:click={irContacto}
-		class="rounded-full bg-pink-500/90 p-3 text-white shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-105 hover:bg-pink-600"
+		class="p-3 rounded-full backdrop-blur-md bg-pink-500/90 text-white shadow-xl hover:bg-pink-600 hover:scale-105 transition-all duration-300"
 		aria-label="Contáctanos"
 	>
 		📞
@@ -182,9 +169,7 @@
 {/if}
 
 {#if enviado}
-	<div
-		class="animate-fade-in fixed bottom-4 right-4 z-50 rounded-xl bg-pink-500 px-4 py-2 text-sm text-white shadow-lg"
-	>
+	<div class="fixed bottom-4 right-4 z-50 bg-pink-500 text-white px-4 py-2 rounded-xl text-sm shadow-lg animate-fade-in">
 		Abriendo WhatsApp...
 	</div>
 {/if}
@@ -203,10 +188,6 @@
 
 	.animate-fade-in {
 		animation: fade-in 0.8s ease-out both;
-	}
-
-	.delay-200 {
-		animation-delay: 0.2s;
 	}
 
 	.fade-up {
