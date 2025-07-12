@@ -41,12 +41,12 @@
 
 		<!-- Imagen principal centrada -->
 		<img
-			src={producto.imagen}
-			alt={producto.nombre}
-			loading="lazy"
-			class="relative z-10 w-full h-full object-contain p-3 transition-transform duration-500 ease-in-out group-hover:scale-105"
-		/>
-	</div>
+  src={producto.imagen}
+  alt={producto.nombre}
+  loading="lazy"
+  class="relative z-10 w-full h-full object-contain p-3 rounded-2xl transition-transform duration-500 ease-in-out group-hover:scale-105"
+/>
+
 
 	<!-- Botón favorito -->
 	<button
