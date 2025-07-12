@@ -21,11 +21,11 @@
 </script>
 
 <article
-	class={`animate-card group relative flex flex-col overflow-hidden rounded-3xl transition-transform duration-300 focus-within:ring-2 hover:-translate-y-1 hover:scale-[1.015] active:scale-95 w-full max-w-[22rem] mx-auto
+	class={`animate-card group relative mx-auto flex w-full max-w-[22rem] flex-col overflow-hidden rounded-3xl transition-transform duration-300 focus-within:ring-2 hover:-translate-y-1 hover:scale-[1.015] active:scale-95
     ${
 			activeCard === producto.id
-				? 'bg-white dark:bg-gray-900 ring-2 ring-pink-400/60 shadow-2xl'
-				: 'bg-white/90 dark:bg-gray-800/80 shadow-md backdrop-blur-xl hover:shadow-xl'
+				? 'bg-white shadow-2xl ring-2 ring-pink-400/60 dark:bg-gray-900'
+				: 'bg-white/90 shadow-md backdrop-blur-xl hover:shadow-xl dark:bg-gray-800/80'
 		}`}
 	tabindex="0"
 	in:fly={{ y: 50, duration: 500, delay: index * 100 }}
@@ -35,18 +35,18 @@
 	<div class="relative aspect-[4/4.5] overflow-hidden rounded-t-3xl">
 		<!-- Fondo difuso -->
 		<div
-			class="absolute inset-0 z-0 bg-center bg-cover blur-2xl scale-110 opacity-30"
+			class="absolute inset-0 z-0 scale-110 bg-cover bg-center opacity-30 blur-2xl"
 			style="background-image: url({producto.imagen})"
 		></div>
 
 		<!-- Imagen principal centrada -->
 		<img
-  src={producto.imagen}
-  alt={producto.nombre}
-  loading="lazy"
-  class="relative z-10 w-full h-full object-contain p-3 rounded-2xl transition-transform duration-500 ease-in-out group-hover:scale-105"
-/>
-
+			src={producto.imagen}
+			alt={producto.nombre}
+			loading="lazy"
+			class="relative z-10 h-full w-full rounded-2xl object-contain p-3 transition-transform duration-500 ease-in-out group-hover:scale-105"
+		/>
+	</div>
 
 	<!-- Botón favorito -->
 	<button
@@ -65,19 +65,23 @@
 	<!-- Contenido -->
 	<div class="relative flex flex-1 flex-col overflow-hidden">
 		<div class="content-scroll relative flex-1 overflow-y-auto px-4 py-4 sm:p-5">
-			<h3 class="text-lg sm:text-xl font-bold leading-snug text-gray-900 dark:text-white">
+			<h3 class="text-lg font-bold leading-snug text-gray-900 sm:text-xl dark:text-white">
 				{producto.nombre}
 			</h3>
-			<p class="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">
+			<p
+				class="mt-2 line-clamp-2 text-sm leading-relaxed text-gray-600 sm:text-base dark:text-gray-300"
+			>
 				{producto.descripcion}
 			</p>
-			<p class="mt-2 text-base sm:text-lg font-extrabold text-pink-600 dark:text-pink-400">
+			<p class="mt-2 text-base font-extrabold text-pink-600 sm:text-lg dark:text-pink-400">
 				{producto.precio}
 			</p>
 		</div>
 
 		{#if activeCard === producto.id}
-			<div class="animate-actions shadow-button sticky bottom-0 z-10 flex flex-col gap-3 border-t border-pink-100 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 sm:px-5 pb-4 pt-3">
+			<div
+				class="animate-actions shadow-button sticky bottom-0 z-10 flex flex-col gap-3 border-t border-pink-100 bg-white px-4 pb-4 pt-3 sm:px-5 dark:border-gray-700 dark:bg-gray-900"
+			>
 				<button
 					class="w-full rounded-xl bg-pink-500 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-pink-600"
 					on:click|stopPropagation={() => dispatch('abrirModal')}
@@ -119,7 +123,8 @@
 	}
 
 	@keyframes heartbeat {
-		0%, 100% {
+		0%,
+		100% {
 			transform: scale(1);
 		}
 		14% {
