@@ -1,4 +1,3 @@
-<!-- ProductoCard.svelte -->
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
@@ -32,23 +31,23 @@
   in:fly={{ y: 50, duration: 500, delay: index * 100 }}
   on:click={() => dispatch('toggle')}
 >
-  <!-- Imagen + fondo difuminado con integración visual -->
-  <div class="relative w-full aspect-[3/4] overflow-hidden rounded-t-3xl">
-    <!-- Fondo desenfocado + gradiente -->
+  <!-- Imagen con fondo difuminado -->
+  <div class="relative w-full aspect-[5/6] overflow-hidden rounded-t-3xl shadow-inner-soft bg-white dark:bg-gray-800">
+    <!-- Fondo difuso -->
     <div
       class="absolute inset-0 z-0 bg-center bg-cover scale-125 blur-2xl opacity-40"
       style="background-image: url({producto.imagen})"
-    >
-      <!-- Gradiente radial para suavizar bordes -->
-      <div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.5)_0%,_transparent_80%)]"></div>
-    </div>
+    ></div>
+
+    <!-- Overlay radial para difuminar bordes -->
+    <div class="absolute inset-0 z-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.6)_0%,_transparent_75%)]"></div>
 
     <!-- Imagen principal -->
     <img
       src={producto.imagen}
       alt={producto.nombre}
       loading="lazy"
-      class="relative z-10 w-full h-full object-contain p-4 transition-transform duration-500 ease-in-out group-hover:scale-105"
+      class="relative z-10 w-full h-full object-contain p-4 transition-transform duration-500 ease-in-out group-hover:scale-105 rounded-2xl"
     />
   </div>
 
@@ -133,6 +132,24 @@
     }
   }
 
+  @keyframes heartbeat {
+    0%, 100% {
+      transform: scale(1);
+    }
+    14% {
+      transform: scale(1.3);
+    }
+    28% {
+      transform: scale(1);
+    }
+    42% {
+      transform: scale(1.25);
+    }
+    70% {
+      transform: scale(1);
+    }
+  }
+
   .heart-icon {
     font-size: 1.25rem;
     animation: heartbeat 2.2s infinite ease-in-out;
@@ -162,5 +179,10 @@
   .overflow-y-auto::-webkit-scrollbar {
     width: 0;
     background: transparent;
+  }
+
+  /* NUEVO: sombra interna sutil */
+  .shadow-inner-soft {
+    box-shadow: inset 0 0 36px rgba(0, 0, 0, 0.04);
   }
 </style>
