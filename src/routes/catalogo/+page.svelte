@@ -113,17 +113,19 @@
 				</p>
 			</div>
 
-			<!-- Grilla -->
-			<div class="mt-14 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 justify-items-center">
+			<!-- Grilla adaptativa -->
+			<div class="mt-14 grid grid-cols-[repeat(auto-fit,_minmax(240px,_1fr))] gap-6 justify-items-center">
 				{#if cargando}
 					{#each Array(6) as _, i}
-						<div class="animate-pulse h-80 rounded-2xl bg-white/70 dark:bg-gray-800/60 w-full max-w-sm"></div>
+						<div class="h-80 w-full max-w-[18rem] animate-pulse rounded-2xl bg-white/70 dark:bg-gray-800/60"></div>
 					{/each}
 				{:else if productosFiltrados.length === 0}
-					<p class="text-center col-span-full text-gray-500 dark:text-gray-400 text-sm mt-8">No se encontraron productos.</p>
+					<p class="col-span-full mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+						No se encontraron productos.
+					</p>
 				{:else}
 					{#each productosFiltrados as producto, i (producto.id)}
-						<div class="fade-up" style="--delay: {i * 70}ms">
+						<div class="fade-up w-full max-w-[18rem]" style="--delay: {i * 70}ms">
 							<ProductoCard
 								{producto}
 								{activeCard}
