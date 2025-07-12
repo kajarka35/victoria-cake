@@ -21,7 +21,7 @@
 </script>
 
 <article
-  class={`animate-card group relative flex h-full transform touch-manipulation flex-col overflow-hidden rounded-3xl outline-none transition-transform duration-300 focus-within:ring-2 hover:-translate-y-1 hover:scale-[1.015] active:scale-95
+  class={`animate-card group relative flex flex-col overflow-hidden rounded-3xl outline-none transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.01] active:scale-95
     ${
       activeCard === producto.id
         ? 'bg-white shadow-2xl ring-2 ring-pink-400/60 dark:bg-gray-900'
@@ -30,24 +30,24 @@
   tabindex="0"
   in:fly={{ y: 50, duration: 500, delay: index * 100 }}
   on:click={() => dispatch('toggle')}
+  style="max-width: 100%; width: 100%;"
 >
-  <!-- Imagen con fondo difuminado -->
-  <div class="relative w-full aspect-[5/6] overflow-hidden rounded-t-3xl shadow-inner-soft bg-white dark:bg-gray-800">
-    <!-- Fondo difuso -->
+  <!-- Imagen con fondo integrado -->
+  <div class="relative w-full aspect-[4/5] sm:aspect-[4/4] overflow-hidden rounded-t-3xl">
+    <!-- Fondo difuminado -->
     <div
-      class="absolute inset-0 z-0 bg-center bg-cover scale-125 blur-2xl opacity-40"
+      class="absolute inset-0 z-0 bg-center bg-cover scale-110 blur-xl opacity-30"
       style="background-image: url({producto.imagen})"
     ></div>
-
-    <!-- Overlay radial para difuminar bordes -->
-    <div class="absolute inset-0 z-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.6)_0%,_transparent_75%)]"></div>
+    <!-- Gradiente overlay -->
+    <div class="absolute inset-0 z-0 bg-gradient-to-b from-white/80 via-white/60 to-transparent dark:from-gray-900/80 dark:via-gray-900/60"></div>
 
     <!-- Imagen principal -->
     <img
       src={producto.imagen}
       alt={producto.nombre}
       loading="lazy"
-      class="relative z-10 w-full h-full object-contain p-4 transition-transform duration-500 ease-in-out group-hover:scale-105 rounded-2xl"
+      class="relative z-10 w-full h-full object-contain transition-transform duration-500 ease-in-out group-hover:scale-105"
     />
   </div>
 
@@ -66,8 +66,8 @@
   </button>
 
   <!-- Contenido -->
-  <div class="relative flex flex-1 flex-col overflow-hidden">
-    <div class="content-scroll relative flex-1 overflow-y-auto px-4 py-4 text-left sm:p-6">
+  <div class="flex flex-col flex-1 overflow-hidden">
+    <div class="content-scroll flex-1 overflow-y-auto px-4 py-4 sm:p-6 text-left">
       <h3 class="text-lg font-bold leading-snug text-gray-900 sm:text-xl dark:text-white">
         {producto.nombre}
       </h3>
@@ -179,9 +179,5 @@
   .overflow-y-auto::-webkit-scrollbar {
     width: 0;
     background: transparent;
-  }
-
-  .shadow-inner-soft {
-    box-shadow: inset 0 0 36px rgba(0, 0, 0, 0.04);
   }
 </style>
