@@ -31,20 +31,13 @@
 	in:fly={{ y: 50, duration: 500, delay: index * 100 }}
 	on:click={() => dispatch('toggle')}
 >
-	<!-- Imagen con fondo difuminado -->
-	<div class="relative aspect-[4/4.5] overflow-hidden rounded-t-3xl">
-		<!-- Fondo difuso -->
-		<div
-			class="absolute inset-0 z-0 scale-110 bg-cover bg-center opacity-30 blur-2xl"
-			style="background-image: url({producto.imagen})"
-		></div>
-
-		<!-- Imagen principal centrada -->
+	<!-- Imagen centrada visualmente y responsiva -->
+	<div class="relative w-full aspect-[4/3] overflow-hidden rounded-t-3xl">
 		<img
 			src={producto.imagen}
 			alt={producto.nombre}
 			loading="lazy"
-			class="relative z-10 h-full w-full rounded-3xl object-contain p-3 transition-transform duration-500 ease-in-out group-hover:scale-105"
+			class="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-105"
 		/>
 	</div>
 
@@ -68,9 +61,7 @@
 			<h3 class="text-lg font-bold leading-snug text-gray-900 sm:text-xl dark:text-white">
 				{producto.nombre}
 			</h3>
-			<p
-				class="mt-2 line-clamp-2 text-sm leading-relaxed text-gray-600 sm:text-base dark:text-gray-300"
-			>
+			<p class="mt-2 line-clamp-2 text-sm leading-relaxed text-gray-600 sm:text-base dark:text-gray-300">
 				{producto.descripcion}
 			</p>
 			<p class="mt-2 text-base font-extrabold text-pink-600 sm:text-lg dark:text-pink-400">
@@ -123,22 +114,11 @@
 	}
 
 	@keyframes heartbeat {
-		0%,
-		100% {
-			transform: scale(1);
-		}
-		14% {
-			transform: scale(1.3);
-		}
-		28% {
-			transform: scale(1);
-		}
-		42% {
-			transform: scale(1.25);
-		}
-		70% {
-			transform: scale(1);
-		}
+		0%, 100% { transform: scale(1); }
+		14% { transform: scale(1.3); }
+		28% { transform: scale(1); }
+		42% { transform: scale(1.25); }
+		70% { transform: scale(1); }
 	}
 
 	.animate-card {
