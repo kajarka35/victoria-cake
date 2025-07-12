@@ -81,10 +81,7 @@
 
 <svelte:head>
 	<title>Catálogo | Victoria Cake</title>
-	<meta
-		name="description"
-		content="Explora nuestros pasteles artesanales únicos, con sabor, diseño y calidad en cada detalle."
-	/>
+	<meta name="description" content="Explora nuestros pasteles artesanales únicos, con sabor, diseño y calidad en cada detalle." />
 </svelte:head>
 
 {#if show}
@@ -102,6 +99,7 @@
 
 	<!-- Catálogo -->
 	<section class="relative bg-gradient-to-b from-pink-100 via-white to-white dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 animate-fade-in">
+		<!-- Decorativos -->
 		<div class="absolute -top-10 -left-10 w-96 h-96 bg-pink-300 rounded-full opacity-20 blur-3xl animate-pulse"></div>
 		<div class="absolute bottom-0 right-0 w-72 h-72 bg-purple-200 rounded-full opacity-20 blur-2xl animate-pulse delay-300"></div>
 
@@ -116,7 +114,7 @@
 			</div>
 
 			<!-- Grilla -->
-			<div class="mt-14 grid justify-items-center gap-y-10 gap-x-6 grid-cols-[repeat(auto-fit,_minmax(250px,_1fr))]">
+			<div class="mt-14 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 justify-items-center">
 				{#if cargando}
 					{#each Array(6) as _, i}
 						<div class="animate-pulse h-80 rounded-2xl bg-white/70 dark:bg-gray-800/60 w-full max-w-sm"></div>
