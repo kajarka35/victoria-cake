@@ -114,10 +114,10 @@
 			</div>
 
 			<!-- Grilla adaptativa -->
-			<div class="mt-14 grid grid-cols-[repeat(auto-fill,_minmax(260px,_1fr))] gap-6 justify-items-center">
+			<div class="mt-14 grid grid-cols-[repeat(auto-fill,_minmax(260px,_1fr))] gap-6 justify-items-center justify-center">
 				{#if cargando}
 					{#each Array(6) as _, i}
-						<div class="h-80 w-full max-w-[18rem] animate-pulse rounded-2xl bg-white/70 dark:bg-gray-800/60"></div>
+						<div class="h-80 w-full animate-pulse rounded-2xl bg-white/70 dark:bg-gray-800/60"></div>
 					{/each}
 				{:else if productosFiltrados.length === 0}
 					<p class="col-span-full mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
@@ -125,7 +125,7 @@
 					</p>
 				{:else}
 					{#each productosFiltrados as producto, i (producto.id)}
-						<div class="fade-up w-full max-w-[18rem]" style="--delay: {i * 70}ms">
+						<div class="fade-up w-full" style="--delay: {i * 70}ms">
 							<ProductoCard
 								{producto}
 								{activeCard}
