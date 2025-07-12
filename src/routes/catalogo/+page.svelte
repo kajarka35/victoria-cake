@@ -114,7 +114,7 @@
 			</div>
 
 			<!-- Grilla adaptativa -->
-			<div class="mt-14 grid grid-cols-[repeat(auto-fit,_minmax(240px,_1fr))] gap-6 justify-items-center">
+			<div class="mt-14 grid grid-cols-[repeat(auto-fill,_minmax(260px,_1fr))] gap-6 justify-items-center">
 				{#if cargando}
 					{#each Array(6) as _, i}
 						<div class="h-80 w-full max-w-[18rem] animate-pulse rounded-2xl bg-white/70 dark:bg-gray-800/60"></div>
