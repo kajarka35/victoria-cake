@@ -21,7 +21,7 @@
 </script>
 
 <article
-  class={`animate-card group relative flex flex-col overflow-hidden rounded-3xl outline-none transition-transform duration-300 focus-within:ring-2 hover:-translate-y-1 hover:scale-[1.015] active:scale-95
+  class={`animate-card group relative flex flex-col overflow-hidden rounded-3xl outline-none transition-transform duration-300 focus-within:ring-2 hover:-translate-y-1 hover:scale-[1.015] active:scale-95 mx-auto w-full max-w-[19rem] sm:max-w-[20rem]
     ${
       activeCard === producto.id
         ? 'bg-white shadow-2xl ring-2 ring-pink-400/60 dark:bg-gray-900'
@@ -30,10 +30,9 @@
   tabindex="0"
   in:fly={{ y: 50, duration: 500, delay: index * 100 }}
   on:click={() => dispatch('toggle')}
-  style="max-width: 100%; width: 100%;"
 >
   <!-- Imagen con fondo difuminado -->
-  <div class="relative w-full aspect-[4/5] sm:aspect-[4/4] overflow-hidden rounded-t-3xl">
+  <div class="relative w-full aspect-[4/4.5] overflow-hidden rounded-t-3xl">
     <!-- Fondo difuso -->
     <div
       class="absolute inset-0 z-0 bg-center bg-cover blur-xl scale-110 opacity-30"
