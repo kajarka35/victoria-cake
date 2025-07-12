@@ -21,7 +21,7 @@
 </script>
 
 <article
-  class={`animate-card group relative flex flex-col overflow-hidden rounded-3xl outline-none transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.01] active:scale-95
+  class={`animate-card group relative flex flex-col overflow-hidden rounded-3xl outline-none transition-transform duration-300 focus-within:ring-2 hover:-translate-y-1 hover:scale-[1.015] active:scale-95
     ${
       activeCard === producto.id
         ? 'bg-white shadow-2xl ring-2 ring-pink-400/60 dark:bg-gray-900'
@@ -32,15 +32,16 @@
   on:click={() => dispatch('toggle')}
   style="max-width: 100%; width: 100%;"
 >
-  <!-- Imagen con fondo integrado -->
+  <!-- Imagen con fondo difuminado -->
   <div class="relative w-full aspect-[4/5] sm:aspect-[4/4] overflow-hidden rounded-t-3xl">
-    <!-- Fondo difuminado -->
+    <!-- Fondo difuso -->
     <div
-      class="absolute inset-0 z-0 bg-center bg-cover scale-110 blur-xl opacity-30"
+      class="absolute inset-0 z-0 bg-center bg-cover blur-xl scale-110 opacity-30"
       style="background-image: url({producto.imagen})"
     ></div>
-    <!-- Gradiente overlay -->
-    <div class="absolute inset-0 z-0 bg-gradient-to-b from-white/80 via-white/60 to-transparent dark:from-gray-900/80 dark:via-gray-900/60"></div>
+
+    <!-- Overlay suave -->
+    <div class="absolute inset-0 z-0 bg-gradient-to-b from-white/90 via-white/60 to-transparent dark:from-gray-900/90 dark:via-gray-900/60"></div>
 
     <!-- Imagen principal -->
     <img
@@ -66,8 +67,8 @@
   </button>
 
   <!-- Contenido -->
-  <div class="flex flex-col flex-1 overflow-hidden">
-    <div class="content-scroll flex-1 overflow-y-auto px-4 py-4 sm:p-6 text-left">
+  <div class="relative flex flex-1 flex-col overflow-hidden">
+    <div class="content-scroll relative flex-1 overflow-y-auto px-4 py-4 text-left sm:p-6">
       <h3 class="text-lg font-bold leading-snug text-gray-900 sm:text-xl dark:text-white">
         {producto.nombre}
       </h3>
