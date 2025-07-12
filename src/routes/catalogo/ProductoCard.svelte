@@ -19,6 +19,14 @@
   const dispatch = createEventDispatcher();
   let esFavorito = false;
 
+  // Detectar si la imagen es vertical
+  let isVertical = false;
+
+  function detectarOrientacion(e: Event) {
+    const img = e.target as HTMLImageElement;
+    isVertical = img.naturalHeight > img.naturalWidth;
+  }
+
   function toggleFavorito(event: Event) {
     event.stopPropagation();
     esFavorito = !esFavorito;
@@ -35,19 +43,19 @@
   in:fly={{ y: 50, duration: 500, delay: index * 100 }}
   on:click={() => dispatch('toggle')}
 >
-  <!-- Imagen -->
-<!-- Dentro de ProductoCard.svelte -->
-<div class="relative w-full aspect-[4/3] bg-white dark:bg-gray-800 rounded-t-3xl overflow-hidden flex items-center justify-center">
-  <img
-    src={producto.imagen}
-    alt={producto.nombre}
-    class="object-contain w-full h-full p-2 transition-transform duration-500 ease-in-out group-hover:scale-105"
-    loading="lazy"
-  />
-</div>
+  <!-- Imagen con orientación dinámica -->
+  <div class="relative w-full aspect-[4/3] bg-white dark:bg-gray-800 rounded-t-3xl overflow-hidden flex items-center justify-center">
+    <img
+      src={producto.imagen}
+      alt={producto.nombre}
+      loading="lazy"
+      class={`w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-105
+        ${isVertical ? 'object-contain p-2' : 'object-cover'}`}
+      on:load={detectarOrientacion}
+    />
+  </div>
 
-
-  <!-- Sticky botón favorito con retroalimentación visual -->
+  <!-- Botón favorito -->
   <button
     aria-label="Marcar como favorito"
     class={`sticky top-3 right-3 self-end z-20 rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:shadow-lg transition active:scale-95 mt-[-1.5rem]
@@ -60,9 +68,8 @@
     <span class:heart-icon={esFavorito}>{esFavorito ? '❤️' : '🤍'}</span>
   </button>
 
-  <!-- Contenido + botones -->
+  <!-- Contenido -->
   <div class="relative flex flex-col flex-1 overflow-hidden">
-    <!-- Scrollable content -->
     <div class="px-4 py-4 sm:p-6 text-left overflow-y-auto flex-1 content-scroll relative">
       <h3 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white leading-snug">
         {producto.nombre}
@@ -76,7 +83,6 @@
     </div>
 
     {#if activeCard === producto.id}
-      <!-- Botones sticky -->
       <div class="sticky bottom-0 z-10 bg-white dark:bg-gray-900 px-4 sm:px-6 pb-4 pt-3 border-t border-pink-100 dark:border-gray-700 flex flex-col gap-3 animate-actions shadow-button">
         <button
           class="w-full bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-xl text-base font-semibold transition shadow-sm"
