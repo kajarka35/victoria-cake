@@ -181,7 +181,6 @@
     background: transparent;
   }
 
-  /* NUEVO: sombra interna sutil */
   .shadow-inner-soft {
     box-shadow: inset 0 0 36px rgba(0, 0, 0, 0.04);
   }
