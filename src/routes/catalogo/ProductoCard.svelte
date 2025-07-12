@@ -43,15 +43,15 @@
   in:fly={{ y: 50, duration: 500, delay: index * 100 }}
   on:click={() => dispatch('toggle')}
 >
-  <!-- Imagen con orientación dinámica -->
-  <div class="relative w-full aspect-[4/3] bg-white dark:bg-gray-800 rounded-t-3xl overflow-hidden flex items-center justify-center">
+  <!-- Imagen adaptable -->
+  <div class="relative aspect-[4/3] sm:aspect-[4/3] w-full overflow-hidden rounded-t-3xl bg-white dark:bg-gray-800 flex items-center justify-center">
     <img
       src={producto.imagen}
       alt={producto.nombre}
-      loading="lazy"
-      class={`w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-105
+      class={`w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-105 
         ${isVertical ? 'object-contain p-2' : 'object-cover'}`}
       on:load={detectarOrientacion}
+      loading="lazy"
     />
   </div>
 
