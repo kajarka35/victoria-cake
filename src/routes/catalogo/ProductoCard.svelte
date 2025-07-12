@@ -44,7 +44,7 @@
 			src={producto.imagen}
 			alt={producto.nombre}
 			loading="lazy"
-			class="relative z-10 h-full w-full rounded-2xl object-contain p-3 transition-transform duration-500 ease-in-out group-hover:scale-105"
+			class="relative z-10 h-full w-full rounded-3xl object-contain p-3 transition-transform duration-500 ease-in-out group-hover:scale-105"
 		/>
 	</div>
 
