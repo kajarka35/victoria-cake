@@ -44,16 +44,18 @@
   on:click={() => dispatch('toggle')}
 >
   <!-- Imagen adaptable -->
-  <div class="relative aspect-[4/3] sm:aspect-[4/3] w-full overflow-hidden rounded-t-3xl bg-white dark:bg-gray-800 flex items-center justify-center">
-    <img
-      src={producto.imagen}
-      alt={producto.nombre}
-      class={`w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-105 
-        ${isVertical ? 'object-contain p-2' : 'object-cover'}`}
-      on:load={detectarOrientacion}
-      loading="lazy"
-    />
-  </div>
+<div class={`relative w-full overflow-hidden rounded-t-3xl bg-white dark:bg-gray-800 flex items-center justify-center
+  ${isVertical ? 'aspect-[3/4]' : 'aspect-[4/3]'}`}>
+  <img
+    src={producto.imagen}
+    alt={producto.nombre}
+    loading="lazy"
+    class={`w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-105 
+      ${isVertical ? 'object-contain p-2' : 'object-cover'}`}
+    on:load={detectarOrientacion}
+  />
+</div>
+
 
   <!-- Botón favorito -->
   <button
