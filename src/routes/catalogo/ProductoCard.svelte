@@ -31,13 +31,12 @@
 	on:click={() => dispatch('toggle')}
 >
 	<div
-		class="relative h-56 w-full overflow-hidden rounded-t-3xl sm:h-64"
+		class="relative h-56 min-h-[14rem] w-full shrink-0 overflow-hidden rounded-t-3xl sm:h-64 sm:min-h-[16rem]"
 		style="-webkit-mask-image: -webkit-radial-gradient(white, black);"
 	>
 		<img
 			src={producto.imagen}
 			alt={producto.nombre}
-			loading="lazy"
 			class="absolute inset-0 z-0 h-full w-full transform-gpu object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-105"
 			style="backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: translateZ(0);"
 		/>
