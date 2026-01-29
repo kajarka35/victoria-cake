@@ -405,14 +405,16 @@
 									</div>
 								</div>
 							{:else}
-								<!-- STANDARD BLOCKS (Premium Style) -->
-								<div class="group col-span-2 md:col-span-1">
-									<div
-										class="relative flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-1 shadow-sm transition-all focus-within:ring-2 focus-within:ring-pink-500/20 hover:border-pink-200"
-									>
-										<!-- ICON (Visual Context) -->
+								<!-- STANDARD BLOCKS (Ultra-Clean Style) -->
+								<div
+									class="{block.key.includes('btn')
+										? 'col-span-1'
+										: 'col-span-2 md:col-span-2'} animate-in fade-in group duration-500"
+								>
+									<div class="relative transition-all focus-within:scale-[1.01]">
+										<!-- ICON (Integrated, Subtle) -->
 										<div
-											class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-xl shadow-sm transition-colors group-hover:bg-pink-50"
+											class="pointer-events-none absolute left-3 top-3.5 z-10 text-lg opacity-60 grayscale transition-all group-focus-within:opacity-100 group-focus-within:grayscale-0"
 										>
 											{#if block.key.includes('title')}📝
 											{:else if block.key.includes('btn')}🔘
@@ -422,30 +424,34 @@
 											{:else}✏️{/if}
 										</div>
 
-										<!-- INPUT CONTEXT -->
-										<div class="relative w-full">
-											<span
-												class="absolute left-1 top-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 group-focus-within:text-pink-500"
-											>
-												{block.label || block.key.replace(/_/g, ' ')}
-											</span>
+										<!-- FLOATING LABEL -->
+										<label
+											for="block_{block.id}"
+											class="pointer-events-none absolute left-10 top-1.5 text-[9px] font-bold uppercase tracking-wider text-gray-400 transition-colors group-focus-within:text-pink-600 group-hover:text-pink-500"
+										>
+											{block.label || block.key.replace(/_/g, ' ')}
+										</label>
 
-											{#if block.type === 'long_text'}
-												<textarea
-													name="block_{block.id}"
-													rows="2"
-													class="w-full resize-y bg-transparent px-1 pb-1 pt-6 text-sm font-medium text-gray-800 placeholder-gray-300 outline-none transition-all"
-													value={block.value}
-												></textarea>
-											{:else}
-												<input
-													type="text"
-													name="block_{block.id}"
-													value={block.value}
-													class="w-full bg-transparent px-1 pb-1 pt-6 text-sm font-medium text-gray-800 placeholder-gray-300 outline-none transition-all"
-												/>
-											{/if}
-										</div>
+										<!-- INPUT / TEXTAREA -->
+										{#if block.type === 'long_text'}
+											<textarea
+												id="block_{block.id}"
+												name="block_{block.id}"
+												rows="2"
+												class="w-full resize-none rounded-xl border border-gray-200 bg-gray-50/40 pb-2 pl-10 pr-3 pt-6 text-sm font-semibold text-gray-800 shadow-sm outline-none transition-all placeholder:text-transparent focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/10"
+												value={block.value}
+												placeholder={block.label}
+											></textarea>
+										{:else}
+											<input
+												id="block_{block.id}"
+												type="text"
+												name="block_{block.id}"
+												value={block.value}
+												class="w-full rounded-xl border border-gray-200 bg-gray-50/40 pb-2 pl-10 pr-3 pt-6 text-sm font-semibold text-gray-800 shadow-sm outline-none transition-all placeholder:text-transparent focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/10"
+												placeholder={block.label}
+											/>
+										{/if}
 									</div>
 								</div>
 							{/if}
