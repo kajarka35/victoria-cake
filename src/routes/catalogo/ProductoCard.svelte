@@ -30,19 +30,23 @@
 	in:fly={{ y: 50, duration: 500, delay: index * 100 }}
 	on:click={() => dispatch('toggle')}
 >
-	<div class="relative aspect-[4/3] w-full overflow-hidden rounded-t-3xl">
+	<div
+		class="relative h-56 w-full overflow-hidden rounded-t-3xl sm:h-64"
+		style="-webkit-mask-image: -webkit-radial-gradient(white, black);"
+	>
 		<img
 			src={producto.imagen}
 			alt={producto.nombre}
 			loading="lazy"
-			class="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-105"
+			class="absolute inset-0 z-0 h-full w-full transform-gpu object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-105"
+			style="backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: translateZ(0);"
 		/>
 	</div>
 
 	<!-- Favorito -->
 	<button
 		aria-label="Marcar como favorito"
-		class={`sticky top-3 right-3 z-20 mt-[-1.5rem] flex h-10 w-10 items-center justify-center self-end rounded-full shadow-md transition hover:shadow-lg active:scale-95 ${
+		class={`sticky right-3 top-3 z-20 mt-[-1.5rem] flex h-10 w-10 items-center justify-center self-end rounded-full shadow-md transition hover:shadow-lg active:scale-95 ${
 			esFavorito
 				? 'bg-pink-100 text-pink-600 ring-2 ring-pink-300 dark:bg-pink-900/20 dark:text-pink-300'
 				: 'bg-white/90 text-pink-600 dark:bg-gray-700/80 dark:text-pink-300'
@@ -54,7 +58,7 @@
 
 	<div class="relative flex flex-1 flex-col overflow-hidden">
 		<div class="content-scroll relative flex-1 overflow-y-auto px-4 py-4 sm:p-5">
-			<h3 class="text-lg leading-snug font-bold text-gray-900 sm:text-xl dark:text-white">
+			<h3 class="text-lg font-bold leading-snug text-gray-900 sm:text-xl dark:text-white">
 				{producto.nombre}
 			</h3>
 			<p
@@ -69,7 +73,7 @@
 
 		{#if activeCard === producto.id}
 			<div
-				class="animate-actions shadow-button sticky bottom-0 z-10 flex flex-col gap-3 border-t border-pink-100 bg-white px-4 pt-3 pb-4 sm:px-5 dark:border-gray-700 dark:bg-gray-900"
+				class="animate-actions shadow-button sticky bottom-0 z-10 flex flex-col gap-3 border-t border-pink-100 bg-white px-4 pb-4 pt-3 sm:px-5 dark:border-gray-700 dark:bg-gray-900"
 			>
 				<button
 					class="w-full rounded-xl bg-pink-500 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-pink-600"
