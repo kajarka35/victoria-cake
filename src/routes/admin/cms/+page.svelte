@@ -2,7 +2,19 @@
 	import { enhance } from '$app/forms';
 
 	// Svelte 5 Native Syntax (Runes)
-	let { data, form } = $props();
+	interface CmsBlock {
+		id: string;
+		section: string;
+		key: string;
+		value: string;
+		type: string;
+		label?: string;
+	}
+
+	let { data, form } = $props<{
+		data: { grouped: Record<string, CmsBlock[]> };
+		form: any;
+	}>();
 
 	let loading = $state(false);
 	let activeIconPicker = $state<string | null>(null); // "blockId-index"
@@ -14,17 +26,15 @@
 	// Inicialización Segura (Single Pass)
 	$effect(() => {
 		if (data?.grouped) {
-			Object.values(data.grouped)
-				.flat()
-				.forEach((block: any) => {
-					if (block.type === 'json_list' && !jsonBlocks[block.id]) {
-						try {
-							jsonBlocks[block.id] = block.value ? JSON.parse(block.value) : [];
-						} catch {
-							jsonBlocks[block.id] = [];
-						}
+			(Object.values(data.grouped).flat() as CmsBlock[]).forEach((block) => {
+				if (block.type === 'json_list' && !jsonBlocks[block.id]) {
+					try {
+						jsonBlocks[block.id] = block.value ? JSON.parse(block.value) : [];
+					} catch {
+						jsonBlocks[block.id] = [];
 					}
-				});
+				}
+			});
 		}
 	});
 
@@ -177,7 +187,7 @@
 		}}
 		class="space-y-8 pb-32"
 	>
-		{#each Object.entries(data.grouped) as [section, blocks]}
+		{#each Object.entries(data.grouped as Record<string, CmsBlock[]>) as [section, blocks]}
 			<div
 				class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm ring-1 ring-gray-950/5"
 			>

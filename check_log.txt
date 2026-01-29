@@ -1,0 +1,246 @@
+
+====================================
+Loading svelte-check in workspace: c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main
+Getting Svelte diagnostics...
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\lib\server\supabaseAdmin.ts[39m:4:10
+[31mError[39m: Module '"$env/static/private"' has no exported member 'SUPABASE_SERVICE_ROLE_KEY'. 
+[36mimport { PUBLIC_SUPABASE_URL } from '$env/static/public';
+import { [35mSUPABASE_SERVICE_ROLE_KEY[36m } from '$env/static/private';
+
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:32:10
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m				.forEach((block) => {
+					if ([35mblock[36m.type === 'json_list' && !jsonBlocks[block.id]) {
+						try {
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:32:52
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m				.forEach((block) => {
+					if (block.type === 'json_list' && !jsonBlocks[[35mblock[36m.id]) {
+						try {
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:34:19
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m						try {
+							jsonBlocks[[35mblock[36m.id] = block.value ? JSON.parse(block.value) : [];
+						} catch {
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:34:31
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m						try {
+							jsonBlocks[block.id] = [35mblock[36m.value ? JSON.parse(block.value) : [];
+						} catch {
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:34:56
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m						try {
+							jsonBlocks[block.id] = block.value ? JSON.parse([35mblock[36m.value) : [];
+						} catch {
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:36:19
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m						} catch {
+							jsonBlocks[[35mblock[36m.id] = [];
+						}
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:208:13
+[31mError[39m: Argument of type 'unknown' is not assignable to parameter of type 'ArrayLike<unknown> | Iterable<unknown>'. (ts)
+[36m				<div class="grid gap-8 p-6 md:grid-cols-2">
+					{#each [35mblocks[36m as block}
+						<!-- Verificar si mostrar el bloque (Limpieza UI) -->
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:210:37
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m						<!-- Verificar si mostrar el bloque (Limpieza UI) -->
+						{#if shouldShowBlock(section, [35mblock[36m.key)}
+							<!-- Forzar orden visual: Títulos primero en Contacto -->
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:215:13
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m
+							{#if [35mblock[36m.type === 'json_list'}
+								<div
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:221:12
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m										<span class="rounded-lg bg-blue-100 p-1.5 text-blue-600">📇</span>
+										{[35mblock[36m.label || 'Lista de Contactos'}
+									</h3>
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:226:24
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m										type="hidden"
+										name="block_{[35mblock[36m.id}"
+										value={JSON.stringify(jsonBlocks[block.id] || [])}
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:227:44
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m										name="block_{block.id}"
+										value={JSON.stringify(jsonBlocks[[35mblock[36m.id] || [])}
+									/>
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:231:27
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m									<div class="space-y-3">
+										{#if jsonBlocks[[35mblock[36m.id]}
+											{#each jsonBlocks[block.id] as item, index (item)}
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:232:30
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m										{#if jsonBlocks[block.id]}
+											{#each jsonBlocks[[35mblock[36m.id] as item, index (item)}
+												{#if !item.icon}
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:248:42
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m																activeIconPicker =
+																	activeIconPicker === `${[35mblock[36m.id}-${index}`
+																		? null
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:250:24
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m																		? null
+																		: `${[35mblock[36m.id}-${index}`;
+															}}
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:268:44
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m														<!-- Dropdown Grid -->
+														{#if activeIconPicker === `${[35mblock[36m.id}-${index}`}
+															<div
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:280:45
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m																			: 'text-gray-500'}"
+																		onclick={() => updateIcon([35mblock[36m.id, index, key)}
+																		title={key}
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:309:40
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m																placeholder="Ej: +57..."
+																bind:value={jsonBlocks[[35mblock[36m.id][index].label}
+															/>
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:321:40
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m																placeholder="https://..."
+																bind:value={jsonBlocks[[35mblock[36m.id][index].link}
+															/>
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:339:45
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m																		: ''}"
+																	onclick={() => updateColor([35mblock[36m.id, index, color.id)}
+																	title={color.label}
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:346:41
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m														<!-- 2-STEP DELETE CONFIRMATION -->
+														{#if confirmDelete === `${[35mblock[36m.id}-${index}`}
+															<button
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:353:29
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m																	e.stopPropagation();
+																	removeItem([35mblock[36m.id, index);
+																	confirmDelete = null;
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:378:37
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m																	e.stopPropagation();
+																	confirmDelete = `${[35mblock[36m.id}-${index}`;
+																}}
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:395:35
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m											class="group relative flex items-center justify-center gap-3 rounded-xl border-2 border-dashed border-blue-200 bg-white/50 px-8 py-3 text-sm font-bold text-blue-600 transition-all hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 active:scale-95"
+											onclick={() => addItem([35mblock[36m.id)}
+										>
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:409:16
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m									<label
+										for={[35mblock[36m.id}
+										class="mb-2 block text-sm font-semibold text-gray-700 transition-colors group-hover:text-pink-600"
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:412:12
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m									>
+										{[35mblock[36m.label || block.key}
+									</label>
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:412:27
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m									>
+										{block.label || [35mblock[36m.key}
+									</label>
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:415:16
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m									<div class="relative">
+										{#if [35mblock[36m.type === 'long_text'}
+											<textarea
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:417:26
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m											<textarea
+												name="block_{[35mblock[36m.id}"
+												rows="3"
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:420:20
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m												class="w-full rounded-xl border-gray-200 bg-gray-50/50 p-3 text-base shadow-sm transition-all focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/10 sm:text-sm"
+												value={[35mblock[36m.value}
+											></textarea>
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:425:26
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m												type="text"
+												name="block_{[35mblock[36m.id}"
+												value={block.value}
+[39m
+
+c:\Users\kajar\Desktop\Trabajo\Hablilidades de programacion\victoria-cake-main\[32msrc\routes\admin\cms\+page.svelte[39m:426:20
+[31mError[39m: 'block' is of type 'unknown'. (ts)
+[36m												name="block_{block.id}"
+												value={[35mblock[36m.value}
+												class="h-12 w-full rounded-xl border-gray-200 bg-gray-50/50 p-3 text-base shadow-sm transition-all focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/10 sm:text-sm"
+[39m
+
+====================================
+[31msvelte-check found 34 errors and 29 warnings in 13 files
+[39m

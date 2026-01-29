@@ -19,12 +19,21 @@ export const load: PageServerLoad = async ({ locals }) => {
         return { blocks: [] };
     }
 
+    interface CmsBlock {
+        id: string;
+        section: string;
+        key: string;
+        value: string;
+        type: string;
+        label?: string;
+    }
+
     // Agrupar por sección para la UI
     const grouped = blocks.reduce((acc, item) => {
         if (!acc[item.section]) acc[item.section] = [];
         acc[item.section].push(item);
         return acc;
-    }, {} as Record<string, typeof blocks>);
+    }, {} as Record<string, CmsBlock[]>);
 
     return { grouped };
 };
