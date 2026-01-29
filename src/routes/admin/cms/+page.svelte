@@ -158,13 +158,22 @@
 	];
 </script>
 
-<div class="mx-auto max-w-7xl px-6 py-8" onclick={() => (activeIconPicker = null)}>
-	<div class="mb-8 flex items-center justify-between">
+<div class="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8" onclick={() => (activeIconPicker = null)}>
+	<div
+		class="mb-6 flex flex-col gap-4 border-b border-gray-100 pb-6 md:flex-row md:items-center md:justify-between"
+	>
 		<div>
-			<h1 class="text-3xl font-bold text-gray-800">Gestor de Contenidos</h1>
-			<p class="text-gray-500">Edita textos y configuraciones de toda la web en tiempo real.</p>
+			<h1 class="text-2xl font-bold text-gray-900 md:text-3xl">Gestor de Contenidos</h1>
+			<p class="text-sm text-gray-500 md:text-base">
+				Edita textos y configuraciones de toda la web en tiempo real.
+			</p>
 		</div>
-		<a href="/admin/panel" class="font-medium text-pink-600 hover:underline">← Volver al Panel</a>
+		<a
+			href="/admin/panel"
+			class="flex items-center gap-2 self-start rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200 md:self-auto"
+		>
+			<span>←</span> Volver al Panel
+		</a>
 	</div>
 
 	{#if form?.success}
@@ -405,42 +414,100 @@
 									</div>
 								</div>
 							{:else}
-								<!-- STANDARD BLOCKS (Ultra-Clean Style) -->
+								<!-- STANDARD BLOCKS (Card Style - Solid & Pro) -->
 								<div
 									class="{block.key.includes('btn')
 										? 'col-span-1'
-										: 'col-span-2 md:col-span-2'} animate-in fade-in group duration-500"
+										: 'col-span-2 md:col-span-2'} flex flex-col"
 								>
-									<div class="relative transition-all focus-within:scale-[1.01]">
-										<!-- ICON (Integrated, Subtle) -->
+									<label
+										for="block_{block.id}"
+										class="mb-1.5 ml-1 text-xs font-bold uppercase tracking-wider text-gray-400"
+									>
+										{block.label || block.key.replace(/_/g, ' ')}
+									</label>
+
+									<div
+										class="group relative flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm transition-all focus-within:border-pink-500 focus-within:shadow-md hover:border-gray-300"
+									>
+										<!-- STATIC ICON (SVG) -->
 										<div
-											class="pointer-events-none absolute left-3 top-3.5 z-10 text-lg opacity-60 grayscale transition-all group-focus-within:opacity-100 group-focus-within:grayscale-0"
+											class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-gray-400 transition-colors group-focus-within:bg-pink-50 group-focus-within:text-pink-600"
 										>
-											{#if block.key.includes('title')}📝
-											{:else if block.key.includes('btn')}🔘
-											{:else if block.key.includes('sub')}📄
-											{:else if block.key.includes('seo')}🔍
-											{:else if block.key.includes('url')}🔗
-											{:else}✏️{/if}
+											{#if block.key.includes('title')}
+												<svg
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													class="h-5 w-5"
+													><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+													></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+													></path></svg
+												>
+											{:else if block.key.includes('btn')}
+												<svg
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													class="h-5 w-5"
+													><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
+														points="7 10 12 15 17 10"
+													/><line x1="12" y1="15" x2="12" y2="3" /></svg
+												>
+											{:else if block.key.includes('text') || block.key.includes('sub')}
+												<svg
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													class="h-5 w-5"
+													><line x1="8" y1="6" x2="21" y2="6"></line><line
+														x1="8"
+														y1="12"
+														x2="21"
+														y2="12"
+													></line><line x1="8" y1="18" x2="21" y2="18"></line><line
+														x1="3"
+														y1="6"
+														x2="3.01"
+														y2="6"
+													></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line
+														x1="3"
+														y1="18"
+														x2="3.01"
+														y2="18"
+													></line></svg
+												>
+											{:else}
+												<svg
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													class="h-5 w-5"
+													><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"
+													></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg
+												>
+											{/if}
 										</div>
 
-										<!-- FLOATING LABEL -->
-										<label
-											for="block_{block.id}"
-											class="pointer-events-none absolute left-10 top-1.5 text-[9px] font-bold uppercase tracking-wider text-gray-400 transition-colors group-focus-within:text-pink-600 group-hover:text-pink-500"
-										>
-											{block.label || block.key.replace(/_/g, ' ')}
-										</label>
-
-										<!-- INPUT / TEXTAREA -->
 										{#if block.type === 'long_text'}
 											<textarea
 												id="block_{block.id}"
 												name="block_{block.id}"
-												rows="2"
-												class="w-full resize-none rounded-xl border border-gray-200 bg-gray-50/40 pb-2 pl-10 pr-3 pt-6 text-sm font-semibold text-gray-800 shadow-sm outline-none transition-all placeholder:text-transparent focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/10"
+												rows="3"
+												class="w-full min-w-0 resize-y bg-transparent p-1 text-sm font-medium text-gray-900 placeholder-gray-400 outline-none"
 												value={block.value}
-												placeholder={block.label}
 											></textarea>
 										{:else}
 											<input
@@ -448,8 +515,7 @@
 												type="text"
 												name="block_{block.id}"
 												value={block.value}
-												class="w-full rounded-xl border border-gray-200 bg-gray-50/40 pb-2 pl-10 pr-3 pt-6 text-sm font-semibold text-gray-800 shadow-sm outline-none transition-all placeholder:text-transparent focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/10"
-												placeholder={block.label}
+												class="w-full min-w-0 bg-transparent p-1 pt-1.5 text-sm font-medium text-gray-900 placeholder-gray-400 outline-none"
 											/>
 										{/if}
 									</div>
