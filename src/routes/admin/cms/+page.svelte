@@ -414,25 +414,15 @@
 									</div>
 								</div>
 							{:else}
-								<!-- STANDARD BLOCKS (Card Style - Solid & Pro) -->
-								<div
-									class="{block.key.includes('btn')
-										? 'col-span-1'
-										: 'col-span-2 md:col-span-2'} flex flex-col"
-								>
-									<label
-										for="block_{block.id}"
-										class="mb-1.5 ml-1 text-xs font-bold uppercase tracking-wider text-gray-400"
-									>
-										{block.label || block.key.replace(/_/g, ' ')}
-									</label>
-
+								<!-- STANDARD BLOCKS (Unified Card Design V4) -->
+								<!-- FULL WIDTH MOBILE (col-span-2) to fix "incomplete" look -->
+								<div class="col-span-2 md:col-span-1">
 									<div
-										class="group relative flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm transition-all focus-within:border-pink-500 focus-within:shadow-md hover:border-gray-300"
+										class="group flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm transition-all focus-within:border-pink-500 focus-within:shadow-md hover:border-pink-200"
 									>
-										<!-- STATIC ICON (SVG) -->
+										<!-- STATIC SIDEBAR ICON -->
 										<div
-											class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-gray-400 transition-colors group-focus-within:bg-pink-50 group-focus-within:text-pink-600"
+											class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 text-gray-500 transition-colors group-focus-within:bg-pink-50 group-focus-within:text-pink-600 group-hover:bg-pink-50 group-hover:text-pink-600"
 										>
 											{#if block.key.includes('title')}
 												<svg
@@ -442,7 +432,7 @@
 													stroke-width="2"
 													stroke-linecap="round"
 													stroke-linejoin="round"
-													class="h-5 w-5"
+													class="h-6 w-6"
 													><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
 													></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
 													></path></svg
@@ -455,7 +445,7 @@
 													stroke-width="2"
 													stroke-linecap="round"
 													stroke-linejoin="round"
-													class="h-5 w-5"
+													class="h-6 w-6"
 													><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
 														points="7 10 12 15 17 10"
 													/><line x1="12" y1="15" x2="12" y2="3" /></svg
@@ -468,7 +458,7 @@
 													stroke-width="2"
 													stroke-linecap="round"
 													stroke-linejoin="round"
-													class="h-5 w-5"
+													class="h-6 w-6"
 													><line x1="8" y1="6" x2="21" y2="6"></line><line
 														x1="8"
 														y1="12"
@@ -494,30 +484,43 @@
 													stroke-width="2"
 													stroke-linecap="round"
 													stroke-linejoin="round"
-													class="h-5 w-5"
-													><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"
-													></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg
+													class="h-6 w-6"
+													><polyline points="21 8 21 21 3 21 3 8"></polyline><rect
+														x="1"
+														y="3"
+														width="22"
+														height="5"
+													></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg
 												>
 											{/if}
 										</div>
 
-										{#if block.type === 'long_text'}
-											<textarea
-												id="block_{block.id}"
-												name="block_{block.id}"
-												rows="3"
-												class="w-full min-w-0 resize-y bg-transparent p-1 text-sm font-medium text-gray-900 placeholder-gray-400 outline-none"
-												value={block.value}
-											></textarea>
-										{:else}
-											<input
-												id="block_{block.id}"
-												type="text"
-												name="block_{block.id}"
-												value={block.value}
-												class="w-full min-w-0 bg-transparent p-1 pt-1.5 text-sm font-medium text-gray-900 placeholder-gray-400 outline-none"
-											/>
-										{/if}
+										<!-- INPUT AREA (Matches Contact Layout) -->
+										<div class="relative w-full min-w-0 flex-1">
+											<span
+												class="pointer-events-none absolute left-2.5 top-2 text-[9px] font-bold uppercase tracking-wider text-gray-400"
+											>
+												{block.label || block.key.replace(/_/g, ' ')}
+											</span>
+
+											{#if block.type === 'long_text'}
+												<textarea
+													id="block_{block.id}"
+													name="block_{block.id}"
+													rows="2"
+													class="w-full resize-y rounded-lg border border-gray-100 bg-gray-50 pb-2 pl-2.5 pr-2 pt-6 text-sm font-medium text-gray-900 outline-none transition-all placeholder:text-transparent focus:border-pink-500 focus:bg-white focus:ring-1 focus:ring-pink-500"
+													value={block.value}
+												></textarea>
+											{:else}
+												<input
+													id="block_{block.id}"
+													type="text"
+													name="block_{block.id}"
+													value={block.value}
+													class="w-full rounded-lg border border-gray-100 bg-gray-50 pb-2 pl-2.5 pr-2 pt-6 text-sm font-medium text-gray-900 outline-none transition-all placeholder:text-transparent focus:border-pink-500 focus:bg-white focus:ring-1 focus:ring-pink-500"
+												/>
+											{/if}
+										</div>
 									</div>
 								</div>
 							{/if}
