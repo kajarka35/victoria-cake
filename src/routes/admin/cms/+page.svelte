@@ -331,20 +331,23 @@
 													</div>
 
 													<!-- ROW 2: Footer (Colors + Actions) -->
-													<div
-														class="mt-3 flex items-center justify-between gap-4 border-t border-gray-100 pt-3"
-													>
-														<!-- Scrollable Colors -->
-														<div class="flex-1 overflow-hidden">
-															<div class="scrollbar-hide -mx-1 overflow-x-auto px-1 py-1">
-																<div class="flex min-w-max gap-1.5">
+													<!-- ROW 2: Footer (Stacked: Colors + Actions) -->
+													<div class="mt-3 border-t border-gray-100 pt-3">
+														<!-- Section A: Colors -->
+														<div class="mb-3">
+															<span
+																class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-gray-400"
+																>Color del Icono</span
+															>
+															<div class="scrollbar-hide -mx-1 overflow-x-auto px-1">
+																<div class="flex min-w-max gap-2">
 																	{#each COLORS as color}
 																		<button
 																			type="button"
-																			class="h-6 w-6 shrink-0 rounded-full transition-all focus:outline-none"
+																			class="h-8 w-8 shrink-0 rounded-full transition-all focus:outline-none"
 																			style="background-color: {color.hex}; box-shadow: {item.color ===
 																			color.id
-																				? `0 0 0 2px #fff, 0 0 0 3px ${color.border}`
+																				? `0 0 0 2px #fff, 0 0 0 4px ${color.border}`
 																				: 'inset 0 0 0 1px rgba(0,0,0,0.1)'}"
 																			onclick={() => updateColor(block.id, index, color.id)}
 																			title={color.label}
@@ -354,24 +357,38 @@
 															</div>
 														</div>
 
-														<!-- DELETE BUTTON (Explicit & Visible) -->
-														<div class="shrink-0 border-l border-gray-100 pl-2">
+														<!-- Section B: Actions (Dedicated Row) -->
+														<div class="flex items-center justify-end border-t border-gray-50 pt-3">
 															{#if confirmDelete === `${block.id}-${index}`}
-																<button
-																	type="button"
-																	class="flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 ring-1 ring-red-100 transition-all active:scale-95"
-																	onclick={(e) => {
-																		e.preventDefault();
-																		removeItem(block.id, index);
-																		confirmDelete = null;
-																	}}
+																<div
+																	class="animate-in fade-in slide-in-from-right-2 flex items-center gap-2"
 																>
-																	<span>🗑️</span> Confirmar
-																</button>
+																	<span class="text-xs font-medium text-red-500"
+																		>¿Estás seguro?</span
+																	>
+																	<button
+																		type="button"
+																		class="flex items-center gap-1 rounded-lg bg-red-500 px-4 py-2 text-xs font-bold text-white shadow-sm ring-1 ring-red-600 transition-all active:scale-95"
+																		onclick={(e) => {
+																			e.preventDefault();
+																			removeItem(block.id, index);
+																			confirmDelete = null;
+																		}}
+																	>
+																		SÍ, BORRAR
+																	</button>
+																	<button
+																		type="button"
+																		class="rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-200"
+																		onclick={() => (confirmDelete = null)}
+																	>
+																		Cancelar
+																	</button>
+																</div>
 															{:else}
 																<button
 																	type="button"
-																	class="group/del flex items-center gap-1 rounded-lg bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-500 transition-all hover:bg-red-50 hover:text-red-600 active:scale-95"
+																	class="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-bold text-gray-500 transition-all hover:border-red-200 hover:bg-red-50 hover:text-red-600 active:scale-95 sm:w-auto"
 																	onclick={(e) => {
 																		e.preventDefault();
 																		confirmDelete = `${block.id}-${index}`;
@@ -384,12 +401,12 @@
 																		stroke-width="2"
 																		stroke-linecap="round"
 																		stroke-linejoin="round"
-																		class="h-3.5 w-3.5"
+																		class="h-4 w-4"
 																		><polyline points="3 6 5 6 21 6" /><path
 																			d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
 																		/></svg
 																	>
-																	Eliminar
+																	Eliminar Tarjeta
 																</button>
 															{/if}
 														</div>
