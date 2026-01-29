@@ -242,61 +242,15 @@
 												{/if}
 
 												<div
-													class="group relative flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition-all hover:border-pink-100 hover:shadow-md"
+													class="group flex flex-col rounded-xl border border-gray-200 bg-white p-3 shadow-sm transition-all hover:border-pink-200 hover:shadow-md"
 												>
-													<!-- ABSOLUTE DELETE ACTION (Top-Right) -->
-													<div class="absolute right-2 top-2 z-10">
-														{#if confirmDelete === `${block.id}-${index}`}
-															<div
-																class="animate-in fade-in zoom-in flex items-center gap-1 rounded-full bg-red-50 p-1 shadow-sm ring-1 ring-red-100 duration-200"
-															>
-																<button
-																	type="button"
-																	class="rounded-full bg-red-500 px-3 py-1 text-[10px] font-bold text-white shadow-sm"
-																	onclick={(e) => {
-																		e.preventDefault();
-																		e.stopPropagation();
-																		removeItem(block.id, index);
-																		confirmDelete = null;
-																	}}
-																>
-																	BORRAR
-																</button>
-																<button
-																	type="button"
-																	class="flex h-6 w-6 items-center justify-center rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-																	onclick={(e) => {
-																		e.preventDefault();
-																		e.stopPropagation();
-																		confirmDelete = null;
-																	}}
-																>
-																	✕
-																</button>
-															</div>
-														{:else}
-															<button
-																type="button"
-																class="flex h-7 w-7 items-center justify-center rounded-full text-gray-300 opacity-60 hover:bg-red-50 hover:text-red-500 hover:opacity-100"
-																onclick={(e) => {
-																	e.preventDefault();
-																	e.stopPropagation();
-																	confirmDelete = `${block.id}-${index}`;
-																}}
-																title="Eliminar"
-															>
-																✕
-															</button>
-														{/if}
-													</div>
-
 													<!-- ROW 1: Icon + Inputs -->
-													<div class="flex items-start gap-3 pr-8">
+													<div class="flex items-start gap-3">
 														<!-- ICON PICKER -->
 														<div class="relative shrink-0">
 															<button
 																type="button"
-																class="flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-600 shadow-sm transition-all hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+																class="flex h-12 w-12 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 text-gray-500 shadow-sm transition-all hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
 																onclick={(e) => {
 																	e.stopPropagation();
 																	activeIconPicker =
@@ -351,24 +305,24 @@
 														<div class="grid w-full flex-1 gap-2">
 															<div class="group/input relative">
 																<span
-																	class="absolute left-2.5 top-2.5 text-[9px] font-bold uppercase tracking-wider text-gray-400"
+																	class="absolute left-2.5 top-2 text-[9px] font-bold uppercase tracking-wider text-gray-400"
 																	>Etiqueta</span
 																>
 																<input
 																	type="text"
-																	class="w-full rounded-lg border-gray-200 bg-gray-50/50 py-1.5 pl-16 pr-2 text-sm font-medium transition-all focus:border-pink-500 focus:bg-white focus:ring-pink-500"
+																	class="w-full rounded-lg border border-gray-100 bg-gray-50/50 py-1.5 pl-2.5 pr-2 pt-6 text-sm font-medium outline-none transition-all focus:border-pink-500 focus:bg-white focus:ring-1 focus:ring-pink-500"
 																	placeholder="Nombre..."
 																	bind:value={jsonBlocks[block.id][index].label}
 																/>
 															</div>
 															<div class="group/input relative">
 																<span
-																	class="absolute left-2.5 top-2.5 text-[9px] font-bold uppercase tracking-wider text-gray-400"
-																	>URL</span
+																	class="absolute left-2.5 top-2 text-[9px] font-bold uppercase tracking-wider text-gray-400"
+																	>URL / Tel</span
 																>
 																<input
 																	type="text"
-																	class="w-full rounded-lg border-gray-200 bg-gray-50/50 py-1.5 pl-16 pr-2 font-mono text-xs text-gray-500 transition-all focus:border-pink-500 focus:bg-white focus:ring-pink-500"
+																	class="w-full rounded-lg border border-gray-100 bg-gray-50/50 py-1.5 pl-2.5 pr-2 pt-6 font-mono text-xs text-gray-600 outline-none transition-all focus:border-pink-500 focus:bg-white focus:ring-1 focus:ring-pink-500"
 																	placeholder="https://..."
 																	bind:value={jsonBlocks[block.id][index].link}
 																/>
@@ -376,22 +330,68 @@
 														</div>
 													</div>
 
-													<!-- ROW 2: Colors (Horizontal Scroll) -->
-													<div class="w-full overflow-hidden">
-														<div class="scrollbar-hide -mx-3 overflow-x-auto px-3 pb-1">
-															<div class="flex min-w-max gap-1.5">
-																{#each COLORS as color}
-																	<button
-																		type="button"
-																		class="h-7 w-7 shrink-0 rounded-full transition-all focus:outline-none"
-																		style="background-color: {color.hex}; box-shadow: {item.color ===
-																		color.id
-																			? `0 0 0 2px #fff, 0 0 0 3px ${color.border}`
-																			: 'inset 0 0 0 1px rgba(0,0,0,0.05)'}"
-																		onclick={() => updateColor(block.id, index, color.id)}
-																	></button>
-																{/each}
+													<!-- ROW 2: Footer (Colors + Actions) -->
+													<div
+														class="mt-3 flex items-center justify-between gap-4 border-t border-gray-100 pt-3"
+													>
+														<!-- Scrollable Colors -->
+														<div class="flex-1 overflow-hidden">
+															<div class="scrollbar-hide -mx-1 overflow-x-auto px-1 py-1">
+																<div class="flex min-w-max gap-1.5">
+																	{#each COLORS as color}
+																		<button
+																			type="button"
+																			class="h-6 w-6 shrink-0 rounded-full transition-all focus:outline-none"
+																			style="background-color: {color.hex}; box-shadow: {item.color ===
+																			color.id
+																				? `0 0 0 2px #fff, 0 0 0 3px ${color.border}`
+																				: 'inset 0 0 0 1px rgba(0,0,0,0.1)'}"
+																			onclick={() => updateColor(block.id, index, color.id)}
+																			title={color.label}
+																		></button>
+																	{/each}
+																</div>
 															</div>
+														</div>
+
+														<!-- DELETE BUTTON (Explicit & Visible) -->
+														<div class="shrink-0 border-l border-gray-100 pl-2">
+															{#if confirmDelete === `${block.id}-${index}`}
+																<button
+																	type="button"
+																	class="flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 ring-1 ring-red-100 transition-all active:scale-95"
+																	onclick={(e) => {
+																		e.preventDefault();
+																		removeItem(block.id, index);
+																		confirmDelete = null;
+																	}}
+																>
+																	<span>🗑️</span> Confirmar
+																</button>
+															{:else}
+																<button
+																	type="button"
+																	class="group/del flex items-center gap-1 rounded-lg bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-500 transition-all hover:bg-red-50 hover:text-red-600 active:scale-95"
+																	onclick={(e) => {
+																		e.preventDefault();
+																		confirmDelete = `${block.id}-${index}`;
+																	}}
+																>
+																	<svg
+																		viewBox="0 0 24 24"
+																		fill="none"
+																		stroke="currentColor"
+																		stroke-width="2"
+																		stroke-linecap="round"
+																		stroke-linejoin="round"
+																		class="h-3.5 w-3.5"
+																		><polyline points="3 6 5 6 21 6" /><path
+																			d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+																		/></svg
+																	>
+																	Eliminar
+																</button>
+															{/if}
 														</div>
 													</div>
 												</div>
