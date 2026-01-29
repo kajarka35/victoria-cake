@@ -1,11 +1,10 @@
-// src/routes/admin/login/+page.server.ts
-import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async ({ cookies }) => {
-	const token = cookies.get('sb-access-token');
-	if (token) {
-		throw redirect(303, '/admin/panel');
-	}
+export const load: PageServerLoad = async () => {
+	// Loop Breaker:
+	// No redirigimos automáticamente desde el servidor.
+	// Si el usuario llega aquí es porque necesita loguearse o su sesión expiró.
+	// Permitimos que renderice el formulario de login.
+	// La redirección ocurrirá post-login exitoso.
 	return {};
 };

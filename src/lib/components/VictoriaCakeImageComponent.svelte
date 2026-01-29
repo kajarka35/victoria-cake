@@ -1,23 +1,27 @@
 <script lang="ts">
 	export let onLoginClick = () => {};
+	export let src: string | undefined = undefined;
+
+	const defaultSrc =
+		'https://igjfvofxervwifumejxh.supabase.co/storage/v1/object/public/imagenes-productos/productos/imagen.webp';
 </script>
 
 <!-- Este contenedor ya no tiene in:fly para evitar interferencias -->
 <div class="relative w-full">
-	<div class="group animate-float relative w-full max-w-md">
+	<div class="animate-float group relative w-full max-w-md">
 		<div
-			class="relative overflow-hidden rounded-3xl shadow-2xl transition-transform duration-700 group-hover:scale-[1.05] group-hover:rotate-[1deg]"
+			class="relative overflow-hidden rounded-3xl shadow-2xl transition-transform duration-700 group-hover:rotate-[1deg] group-hover:scale-[1.05]"
 		>
 			<img
-				src="https://igjfvofxervwifumejxh.supabase.co/storage/v1/object/public/imagenes-productos/productos/imagen.webp"
+				src={src || defaultSrc}
 				alt="Pastel decorado"
-				class="h-auto w-full rounded-3xl object-cover transition duration-700 group-hover:brightness-110 group-hover:contrast-105"
+				class="group-hover:contrast-105 h-auto w-full rounded-3xl object-cover transition duration-700 group-hover:brightness-110"
 				loading="lazy"
 			/>
 
 			<div class="pointer-events-none absolute inset-0 overflow-hidden">
 				<div
-					class="animate-shine absolute top-0 left-0 h-full w-1/4 rotate-12 bg-white opacity-10 blur-sm"
+					class="animate-shine absolute left-0 top-0 h-full w-1/4 rotate-12 bg-white opacity-10 blur-sm"
 				></div>
 			</div>
 
@@ -26,7 +30,7 @@
 			></div>
 
 			<svg
-				class="animate-twinkle absolute top-[8%] left-[8%] h-4 w-4 text-yellow-300 drop-shadow sm:h-5 sm:w-5"
+				class="animate-twinkle absolute left-[8%] top-[8%] h-4 w-4 text-yellow-300 drop-shadow sm:h-5 sm:w-5"
 				fill="currentColor"
 				viewBox="0 0 24 24"
 			>
@@ -35,7 +39,7 @@
 				/>
 			</svg>
 			<svg
-				class="animate-twinkle-delay absolute top-[22%] right-[10%] h-3 w-3 text-white drop-shadow-lg sm:h-4 sm:w-4"
+				class="animate-twinkle-delay absolute right-[10%] top-[22%] h-3 w-3 text-white drop-shadow-lg sm:h-4 sm:w-4"
 				fill="currentColor"
 				viewBox="0 0 24 24"
 			>
@@ -54,7 +58,7 @@
 				/>
 			</svg>
 			<svg
-				class="animate-float-heart-delay absolute right-[16%] bottom-[16%] h-5 w-5 sm:h-6 sm:w-6"
+				class="animate-float-heart-delay absolute bottom-[16%] right-[16%] h-5 w-5 sm:h-6 sm:w-6"
 				viewBox="0 0 24 24"
 				fill="#fb7185"
 			>
@@ -68,7 +72,7 @@
 					class="animate-bubble absolute bottom-6 left-1/3 h-1.5 w-1.5 rounded-full bg-white/40 blur-sm sm:h-2 sm:w-2"
 				></div>
 				<div
-					class="animate-bubble-delay absolute right-1/4 bottom-10 h-1 w-1 rounded-full bg-pink-200/60 blur-sm sm:h-1.5 sm:w-1.5"
+					class="animate-bubble-delay absolute bottom-10 right-1/4 h-1 w-1 rounded-full bg-pink-200/60 blur-sm sm:h-1.5 sm:w-1.5"
 				></div>
 				<div
 					class="animate-bubble absolute bottom-5 left-1/2 h-2 w-2 rounded-full bg-yellow-100/80 blur sm:h-2.5 sm:w-2.5"
@@ -76,7 +80,7 @@
 			</div>
 
 			<div
-				class="absolute bottom-4 left-4 cursor-pointer rounded-full bg-white/90 px-5 py-2 text-sm font-medium text-pink-600 shadow-md backdrop-blur-md select-none"
+				class="absolute bottom-4 left-4 cursor-pointer select-none rounded-full bg-white/90 px-5 py-2 text-sm font-medium text-pink-600 shadow-md backdrop-blur-md"
 				title="Victoria Cake"
 				on:click={onLoginClick}
 			>
