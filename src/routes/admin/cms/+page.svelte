@@ -332,63 +332,63 @@
 
 													<!-- ROW 2: Footer (Colors + Actions) -->
 													<!-- ROW 2: Footer (Stacked: Colors + Actions) -->
-													<div class="mt-3 border-t border-gray-100 pt-3">
-														<!-- Section A: Colors -->
-														<div class="mb-3">
+													<div class="mt-4 border-t border-gray-100 pt-4">
+														<!-- Section A: Colors (App-Like Grid - No Scroll) -->
+														<div class="mb-4">
 															<span
-																class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-gray-400"
-																>Color del Icono</span
+																class="mb-2 block text-[10px] font-bold uppercase tracking-wider text-gray-400"
+																>Seleccionar Color</span
 															>
-															<div class="scrollbar-hide -mx-1 overflow-x-auto px-1">
-																<div class="flex min-w-max gap-2">
-																	{#each COLORS as color}
-																		<button
-																			type="button"
-																			class="h-8 w-8 shrink-0 rounded-full transition-all focus:outline-none"
-																			style="background-color: {color.hex}; box-shadow: {item.color ===
-																			color.id
-																				? `0 0 0 2px #fff, 0 0 0 4px ${color.border}`
-																				: 'inset 0 0 0 1px rgba(0,0,0,0.1)'}"
-																			onclick={() => updateColor(block.id, index, color.id)}
-																			title={color.label}
-																		></button>
-																	{/each}
-																</div>
+															<div class="flex flex-wrap gap-2">
+																{#each COLORS as color}
+																	<button
+																		type="button"
+																		class="h-9 w-9 shrink-0 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-offset-1"
+																		style="background-color: {color.hex}; box-shadow: {item.color ===
+																		color.id
+																			? `0 0 0 2px #fff, 0 0 0 4px ${color.border}`
+																			: 'inset 0 0 0 1px rgba(0,0,0,0.1)'}"
+																		onclick={() => updateColor(block.id, index, color.id)}
+																		title={color.label}
+																	></button>
+																{/each}
 															</div>
 														</div>
 
-														<!-- Section B: Actions (Dedicated Row) -->
-														<div class="flex items-center justify-end border-t border-gray-50 pt-3">
+														<!-- Section B: Actions (Full Width Buttons) -->
+														<div class="mt-4 border-t border-gray-50 pt-2">
 															{#if confirmDelete === `${block.id}-${index}`}
 																<div
-																	class="animate-in fade-in slide-in-from-right-2 flex items-center gap-2"
+																	class="animate-in slide-in-from-bottom-2 fade-in flex flex-col gap-2 rounded-xl bg-red-50 p-3"
 																>
-																	<span class="text-xs font-medium text-red-500"
-																		>¿Estás seguro?</span
-																	>
-																	<button
-																		type="button"
-																		class="flex items-center gap-1 rounded-lg bg-red-500 px-4 py-2 text-xs font-bold text-white shadow-sm ring-1 ring-red-600 transition-all active:scale-95"
-																		onclick={(e) => {
-																			e.preventDefault();
-																			removeItem(block.id, index);
-																			confirmDelete = null;
-																		}}
-																	>
-																		SÍ, BORRAR
-																	</button>
-																	<button
-																		type="button"
-																		class="rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-200"
-																		onclick={() => (confirmDelete = null)}
-																	>
-																		Cancelar
-																	</button>
+																	<p class="mb-1 text-center text-xs font-bold text-red-700">
+																		¿Eliminar este contacto?
+																	</p>
+																	<div class="flex gap-2">
+																		<button
+																			type="button"
+																			class="flex-1 rounded-lg bg-red-600 py-2.5 text-xs font-bold text-white shadow-sm active:scale-95"
+																			onclick={(e) => {
+																				e.preventDefault();
+																				removeItem(block.id, index);
+																				confirmDelete = null;
+																			}}
+																		>
+																			SÍ, ELIMINAR
+																		</button>
+																		<button
+																			type="button"
+																			class="flex-1 rounded-lg bg-white py-2.5 text-xs font-bold text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 active:scale-95"
+																			onclick={() => (confirmDelete = null)}
+																		>
+																			CANCELAR
+																		</button>
+																	</div>
 																</div>
 															{:else}
 																<button
 																	type="button"
-																	class="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-bold text-gray-500 transition-all hover:border-red-200 hover:bg-red-50 hover:text-red-600 active:scale-95 sm:w-auto"
+																	class="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-50 py-3 text-sm font-bold text-gray-400 transition-all hover:bg-red-50 hover:text-red-600 active:scale-[0.98]"
 																	onclick={(e) => {
 																		e.preventDefault();
 																		confirmDelete = `${block.id}-${index}`;
@@ -406,7 +406,7 @@
 																			d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
 																		/></svg
 																	>
-																	Eliminar Tarjeta
+																	Eliminar Contacto
 																</button>
 															{/if}
 														</div>
