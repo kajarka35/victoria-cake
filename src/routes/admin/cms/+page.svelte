@@ -233,143 +233,42 @@
 												{/if}
 
 												<div
-													class="group flex flex-col items-start gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-pink-100 hover:shadow-md md:flex-row md:items-center"
+													class="group relative flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition-all hover:border-pink-100 hover:shadow-md"
 												>
-													<!-- ICON PICKER -->
-													<div class="relative shrink-0">
-														<button
-															type="button"
-															class="flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-600 shadow-sm transition-all hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
-															onclick={(e) => {
-																e.stopPropagation();
-																activeIconPicker =
-																	activeIconPicker === `${block.id}-${index}`
-																		? null
-																		: `${block.id}-${index}`;
-															}}
-															title="Cambiar Icono"
-														>
-															<svg
-																viewBox="0 0 24 24"
-																fill="none"
-																stroke="currentColor"
-																stroke-width="2"
-																stroke-linecap="round"
-																stroke-linejoin="round"
-																class="h-6 w-6"
-															>
-																{@html ICONS[item.icon] || ICONS['link']}
-															</svg>
-														</button>
-
-														<!-- Dropdown Grid -->
-														{#if activeIconPicker === `${block.id}-${index}`}
+													<!-- ABSOLUTE DELETE ACTION (Top-Right) -->
+													<div class="absolute right-2 top-2 z-10">
+														{#if confirmDelete === `${block.id}-${index}`}
 															<div
-																class="animate-in fade-in zoom-in-95 absolute left-0 top-14 z-50 grid w-[85vw] max-w-sm grid-cols-5 gap-2 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl duration-200 sm:w-[400px] sm:grid-cols-6"
-																onclick={(e) => e.stopPropagation()}
+																class="animate-in fade-in zoom-in flex items-center gap-1 rounded-full bg-red-50 p-1 shadow-sm ring-1 ring-red-100 duration-200"
 															>
-																{#each Object.entries(ICONS) as [key, svg]}
-																	<button
-																		type="button"
-																		class="flex aspect-square items-center justify-center rounded-xl p-2 transition-all hover:bg-gray-100 {item.icon ===
-																		key
-																			? 'bg-pink-50 text-pink-600 ring-2 ring-pink-500 ring-offset-1'
-																			: 'text-gray-500'}"
-																		onclick={() => updateIcon(block.id, index, key)}
-																		title={key}
-																	>
-																		<svg
-																			viewBox="0 0 24 24"
-																			fill="none"
-																			stroke="currentColor"
-																			stroke-width="2"
-																			stroke-linecap="round"
-																			stroke-linejoin="round"
-																			class="h-full w-full p-0.5">{@html svg}</svg
-																		>
-																	</button>
-																{/each}
-															</div>
-														{/if}
-													</div>
-
-													<!-- INPUTS -->
-													<div class="grid w-full flex-1 gap-2">
-														<div class="group/input relative">
-															<span
-																class="absolute left-3 top-2.5 text-[10px] font-bold uppercase tracking-wider text-gray-400"
-																>Etiqueta</span
-															>
-															<input
-																type="text"
-																class="w-full rounded-lg border-gray-200 bg-gray-50/50 py-2 pl-20 pr-3 text-base font-medium transition-all focus:border-pink-500 focus:bg-white focus:ring-pink-500 sm:text-sm"
-																placeholder="Ej: +57..."
-																bind:value={jsonBlocks[block.id][index].label}
-															/>
-														</div>
-														<div class="group/input relative">
-															<span
-																class="absolute left-3 top-2.5 text-[10px] font-bold uppercase tracking-wider text-gray-400"
-																>URL</span
-															>
-															<input
-																type="text"
-																class="w-full rounded-lg border-gray-200 bg-gray-50/50 py-2 pl-20 pr-3 font-mono text-xs text-gray-500 transition-all focus:border-pink-500 focus:bg-white focus:ring-pink-500"
-																placeholder="https://..."
-																bind:value={jsonBlocks[block.id][index].link}
-															/>
-														</div>
-													</div>
-
-													<!-- COLORS & ACTIONS -->
-													<div class="flex shrink-0 items-center gap-2 md:gap-4">
-														<div
-															class="flex max-w-[160px] flex-wrap gap-1 rounded-lg border border-gray-200/50 bg-gray-50 p-1.5"
-														>
-															{#each COLORS as color}
 																<button
 																	type="button"
-																	class="h-9 w-9 rounded-full transition-all hover:scale-110 focus:outline-none sm:h-6 sm:w-6"
-																	style="background-color: {color.hex}; box-shadow: {item.color ===
-																	color.id
-																		? `0 0 0 2px #fff, 0 0 0 3px ${color.border}`
-																		: ''}"
-																	onclick={() => updateColor(block.id, index, color.id)}
-																	title={color.label}
-																></button>
-															{/each}
-														</div>
-
-														<!-- 2-STEP DELETE CONFIRMATION -->
-														{#if confirmDelete === `${block.id}-${index}`}
-															<button
-																type="button"
-																class="animate-in fade-in zoom-in flex h-8 w-auto items-center justify-center rounded-full bg-red-100 px-3 text-xs font-bold text-red-600 ring-2 ring-red-500 duration-200"
-																onclick={(e) => {
-																	e.preventDefault();
-																	e.stopPropagation();
-																	removeItem(block.id, index);
-																	confirmDelete = null;
-																}}
-															>
-																Eliminar
-															</button>
-															<button
-																type="button"
-																class="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:text-gray-600"
-																onclick={(e) => {
-																	e.preventDefault();
-																	e.stopPropagation();
-																	confirmDelete = null;
-																}}
-																title="Cancelar"
-															>
-																✖
-															</button>
+																	class="rounded-full bg-red-500 px-3 py-1 text-[10px] font-bold text-white shadow-sm"
+																	onclick={(e) => {
+																		e.preventDefault();
+																		e.stopPropagation();
+																		removeItem(block.id, index);
+																		confirmDelete = null;
+																	}}
+																>
+																	BORRAR
+																</button>
+																<button
+																	type="button"
+																	class="flex h-6 w-6 items-center justify-center rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+																	onclick={(e) => {
+																		e.preventDefault();
+																		e.stopPropagation();
+																		confirmDelete = null;
+																	}}
+																>
+																	✕
+																</button>
+															</div>
 														{:else}
 															<button
 																type="button"
-																class="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-all hover:scale-110 hover:bg-red-50 hover:text-red-600"
+																class="flex h-7 w-7 items-center justify-center rounded-full text-gray-300 opacity-60 hover:bg-red-50 hover:text-red-500 hover:opacity-100"
 																onclick={(e) => {
 																	e.preventDefault();
 																	e.stopPropagation();
@@ -377,9 +276,114 @@
 																}}
 																title="Eliminar"
 															>
-																🗑️
+																✕
 															</button>
 														{/if}
+													</div>
+
+													<!-- ROW 1: Icon + Inputs -->
+													<div class="flex items-start gap-3 pr-8">
+														<!-- ICON PICKER -->
+														<div class="relative shrink-0">
+															<button
+																type="button"
+																class="flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-600 shadow-sm transition-all hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+																onclick={(e) => {
+																	e.stopPropagation();
+																	activeIconPicker =
+																		activeIconPicker === `${block.id}-${index}`
+																			? null
+																			: `${block.id}-${index}`;
+																}}
+															>
+																<svg
+																	viewBox="0 0 24 24"
+																	fill="none"
+																	stroke="currentColor"
+																	stroke-width="2"
+																	stroke-linecap="round"
+																	stroke-linejoin="round"
+																	class="h-6 w-6"
+																>
+																	{@html ICONS[item.icon] || ICONS['link']}
+																</svg>
+															</button>
+
+															<!-- Dropdown -->
+															{#if activeIconPicker === `${block.id}-${index}`}
+																<div
+																	class="animate-in fade-in zoom-in-95 absolute left-0 top-14 z-50 grid w-[80vw] max-w-[280px] grid-cols-5 gap-2 rounded-2xl border border-gray-100 bg-white p-3 shadow-xl duration-200"
+																	onclick={(e) => e.stopPropagation()}
+																>
+																	{#each Object.entries(ICONS) as [key, svg]}
+																		<button
+																			type="button"
+																			class="flex aspect-square items-center justify-center rounded-xl p-2 transition-all hover:bg-gray-100 {item.icon ===
+																			key
+																				? 'bg-pink-50 text-pink-600 ring-2 ring-pink-500 ring-offset-1'
+																				: 'text-gray-500'}"
+																			onclick={() => updateIcon(block.id, index, key)}
+																		>
+																			<svg
+																				viewBox="0 0 24 24"
+																				fill="none"
+																				stroke="currentColor"
+																				stroke-width="2"
+																				stroke-linecap="round"
+																				stroke-linejoin="round"
+																				class="h-full w-full p-0.5">{@html svg}</svg
+																			>
+																		</button>
+																	{/each}
+																</div>
+															{/if}
+														</div>
+
+														<div class="grid w-full flex-1 gap-2">
+															<div class="group/input relative">
+																<span
+																	class="absolute left-2.5 top-2.5 text-[9px] font-bold uppercase tracking-wider text-gray-400"
+																	>Etiqueta</span
+																>
+																<input
+																	type="text"
+																	class="w-full rounded-lg border-gray-200 bg-gray-50/50 py-1.5 pl-16 pr-2 text-sm font-medium transition-all focus:border-pink-500 focus:bg-white focus:ring-pink-500"
+																	placeholder="Nombre..."
+																	bind:value={jsonBlocks[block.id][index].label}
+																/>
+															</div>
+															<div class="group/input relative">
+																<span
+																	class="absolute left-2.5 top-2.5 text-[9px] font-bold uppercase tracking-wider text-gray-400"
+																	>URL</span
+																>
+																<input
+																	type="text"
+																	class="w-full rounded-lg border-gray-200 bg-gray-50/50 py-1.5 pl-16 pr-2 font-mono text-xs text-gray-500 transition-all focus:border-pink-500 focus:bg-white focus:ring-pink-500"
+																	placeholder="https://..."
+																	bind:value={jsonBlocks[block.id][index].link}
+																/>
+															</div>
+														</div>
+													</div>
+
+													<!-- ROW 2: Colors (Horizontal Scroll) -->
+													<div class="w-full overflow-hidden">
+														<div class="scrollbar-hide -mx-3 overflow-x-auto px-3 pb-1">
+															<div class="flex min-w-max gap-1.5">
+																{#each COLORS as color}
+																	<button
+																		type="button"
+																		class="h-7 w-7 shrink-0 rounded-full transition-all focus:outline-none"
+																		style="background-color: {color.hex}; box-shadow: {item.color ===
+																		color.id
+																			? `0 0 0 2px #fff, 0 0 0 3px ${color.border}`
+																			: 'inset 0 0 0 1px rgba(0,0,0,0.05)'}"
+																		onclick={() => updateColor(block.id, index, color.id)}
+																	></button>
+																{/each}
+															</div>
+														</div>
 													</div>
 												</div>
 											{/each}
