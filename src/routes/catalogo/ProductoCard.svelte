@@ -21,7 +21,7 @@
 </script>
 
 <article
-	class={`animate-card group relative mx-auto flex w-full max-w-[22rem] flex-col overflow-hidden rounded-3xl transition-transform duration-300 focus-within:ring-2 hover:-translate-y-1 hover:scale-[1.015] active:scale-95 ${
+	class={`animate-card group relative mx-auto block w-full max-w-[22rem] rounded-3xl transition-transform duration-300 focus-within:ring-2 hover:-translate-y-1 hover:scale-[1.015] active:scale-95 ${
 		activeCard === producto.id
 			? 'bg-white shadow-2xl ring-2 ring-pink-400/60 dark:bg-gray-900'
 			: 'bg-white/90 shadow-md backdrop-blur-xl hover:shadow-xl dark:bg-gray-800/80'
@@ -32,13 +32,11 @@
 >
 	<div
 		class="relative h-56 min-h-[14rem] w-full shrink-0 overflow-hidden rounded-t-3xl sm:h-64 sm:min-h-[16rem]"
-		style="-webkit-mask-image: -webkit-radial-gradient(white, black);"
 	>
 		<img
 			src={producto.imagen}
 			alt={producto.nombre}
 			class="absolute inset-0 z-0 h-full w-full transform-gpu object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-105"
-			style="backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: translateZ(0);"
 		/>
 	</div>
 
@@ -55,8 +53,9 @@
 		<span class:heart-icon={esFavorito}>{esFavorito ? '❤️' : '🤍'}</span>
 	</button>
 
-	<div class="relative flex flex-1 flex-col overflow-hidden">
-		<div class="content-scroll relative flex-1 overflow-y-auto px-4 py-4 sm:p-5">
+	<!-- Content Wrapper (Block Flow) -->
+	<div class="relative flex flex-col rounded-b-3xl">
+		<div class="px-4 py-4 sm:p-5">
 			<h3 class="text-lg font-bold leading-snug text-gray-900 sm:text-xl dark:text-white">
 				{producto.nombre}
 			</h3>
@@ -72,7 +71,7 @@
 
 		{#if activeCard === producto.id}
 			<div
-				class="animate-actions shadow-button sticky bottom-0 z-10 flex flex-col gap-3 border-t border-pink-100 bg-white px-4 pb-4 pt-3 sm:px-5 dark:border-gray-700 dark:bg-gray-900"
+				class="animate-actions flex flex-col gap-3 rounded-b-3xl border-t border-pink-100 bg-white px-4 pb-4 pt-3 sm:px-5 dark:border-gray-700 dark:bg-gray-900"
 			>
 				<button
 					class="w-full rounded-xl bg-pink-500 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-pink-600"
