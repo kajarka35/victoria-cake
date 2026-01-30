@@ -21,11 +21,8 @@
 </script>
 
 <article
-	class={`animate-card group relative mx-auto block w-full max-w-[22rem] rounded-3xl transition-transform duration-300 focus-within:ring-2 hover:-translate-y-1 hover:scale-[1.015] active:scale-95 ${
-		activeCard === producto.id
-			? 'bg-white shadow-2xl ring-2 ring-pink-400/60 dark:bg-gray-900'
-			: 'bg-white/90 shadow-md backdrop-blur-xl hover:shadow-xl dark:bg-gray-800/80'
-	}`}
+	class={'group relative mx-auto block w-full max-w-[22rem] rounded-3xl bg-white shadow-xl sm:transition-transform sm:duration-300 sm:hover:-translate-y-1 sm:hover:scale-[1.015] sm:active:scale-95 dark:bg-gray-900 ' +
+		(activeCard === producto.id ? 'ring-2 ring-pink-400/60' : 'shadow-md')}
 	tabindex="0"
 	in:fly={{ y: 50, duration: 500, delay: index * 100 }}
 	on:click={() => dispatch('toggle')}
@@ -36,7 +33,7 @@
 		<img
 			src={producto.imagen}
 			alt={producto.nombre}
-			class="absolute inset-0 z-0 h-full w-full transform-gpu object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-105"
+			class="h-full w-full object-cover object-center"
 		/>
 	</div>
 
