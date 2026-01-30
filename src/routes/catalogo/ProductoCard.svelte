@@ -22,7 +22,7 @@
 
 <article
 	class={'group relative mx-auto block w-full max-w-[22rem] rounded-3xl bg-white shadow-xl sm:transition-transform sm:duration-300 sm:hover:-translate-y-1 sm:hover:scale-[1.015] sm:active:scale-95 dark:bg-gray-900 ' +
-		(activeCard === producto.id ? 'ring-2 ring-pink-400/60' : 'shadow-md')}
+		(activeCard === producto.id ? 'z-30 ring-2 ring-pink-400/60' : 'z-0 shadow-md')}
 	tabindex="0"
 	in:fly={{ y: 50, duration: 500, delay: index * 100 }}
 	on:click={() => dispatch('toggle')}
