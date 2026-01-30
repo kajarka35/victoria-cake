@@ -144,7 +144,7 @@
 					</p>
 				{:else}
 					{#each productosFiltrados as producto, i (producto.id)}
-						<div class="fade-up w-full" style="--delay: {i * 70}ms">
+						<div class="w-full">
 							<ProductoCard
 								{producto}
 								{activeCard}
