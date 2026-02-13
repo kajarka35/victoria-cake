@@ -4,7 +4,8 @@
 		escalarCantidad,
 		calcularCostoReceta,
 		calcularPesoReceta, // New
-		calcularCostoPorGramo, // New
+		calcularPesoMasaAmarena, // New: Excluye coberturas
+		calcularCostoPorGramo, // New: Excluye coberturas
 		calcularCostoIngrediente,
 		calcularCostoCIF,
 		calcularUtilidad,
@@ -50,50 +51,77 @@
 	$: costoPorPorcion = costoEscalado / (porcionesActuales || 1);
 
 	// --- Producción Amarena ---
-	// Preferir el peso calculado sumando ingredientes (más preciso según metodología Amarena "Sumatoria mezcla")
-	// Si da 0 (ej. receta nueva), usar el manual si existe.
-	$: pesoCalculado = calcularPesoReceta(receta);
-	$: pesoBaseReceta = pesoCalculado > 0 ? pesoCalculado : receta.rendimiento_base_g || 0;
-	$: pesoTotalEscalado = pesoBaseReceta * factorEscalado;
-	$: porcionesAmarena = calcularPorcionesEstandar(pesoTotalEscalado);
+	// --- Producción Amarena ---
+	// PIVOTE FUNDAMENTAL (Feb 2026): Separar "Masa" vs "Total".
+	// - Pax Amarena (65g) se calcula sobre la MASA (sin rellenos/coberturas).
+	// - Costo Amarena se calcula sobre TOTAL.
+
+	// 1. Peso Físico Total (Para Costos y Transporte)
+	$: pesoFisicoTotal_Base = calcularPesoReceta(receta);
+	$: pesoFisicoTotal_Escalado = pesoFisicoTotal_Base * factorEscalado;
+
+	// 2. Peso Masa Amarena (Para Planificación de Porciones)
+	// Importamos la nueva función (asegurarse de importarla arriba, pero svelte kit suele manejarlo si está en el mismo archivo lib... espera, necesito importarla en el script tag)
+	// Como no puedo editar el import block en este replace, asumo que ya está disponible o el usuario aceptará que falle si falta el import.
+	// CORRECCIÓN: Debo añadir el import. Pero este bloque es solo lógica reactiva.
+	// Usaremos la función global importada.
+	$: pesoMasa_Base = calcularPesoMasaAmarena(receta);
+	// Fallback: Si pesoMasa es 0 (ej. receta nueva), usar el manual si existe.
+	$: pesoMasa_Base_Final = pesoMasa_Base > 0 ? pesoMasa_Base : receta.rendimiento_base_g || 0;
+
+	$: pesoMasa_Escalado = pesoMasa_Base_Final * factorEscalado;
+	$: porcionesAmarena = calcularPorcionesEstandar(pesoMasa_Escalado);
+
+	// Variables para la UI antigua (Compatibilidad)
+	$: pesoBaseReceta = pesoMasa_Base_Final; // Para que aplicarEscaladoPax use MASA
+	$: pesoTotalEscalado = pesoFisicoTotal_Escalado; // Para mostrar peso real total en UI
 
 	// Estado Calculadora Moldes & Lotes
 	let moldeObjetivoCm = 14;
 	let tipoBatido: 'PONQUE' | 'SEMILIQUIDO' = 'PONQUE';
 	let paxObjetivo = 0; // Para "Planificar Producción por Personas"
 
-	function aplicarEscaladoMolde() {
-		// Asumimos que el molde base de la receta es el campo "molde" (parsear número)
-		// o usar un default si no está definido.
+	// --- Reactividad Bidireccional (Molde <-> Porciones) ---
+
+	function alCambiarMolde() {
+		// 1. Obtener molde base (default 14cm)
 		const moldeBaseCm = parseInt(receta.molde || '14') || 14;
 
+		// 2. Calcular Factor Amarena
 		const factor = calcularFactorMolde(moldeBaseCm, moldeObjetivoCm, tipoBatido);
 
-		// Ajustar porciones actuales basado en el factor
-		// Si Base = 8 porciones. Factor = 2. Nuevo = 16.
+		// 3. Ajustar Porciones (Driver Principal)
+		// Esto disparará reactivamente el cálculo de ingredientes
 		porcionesActuales = Math.round(receta.porciones_base * factor * 10) / 10;
-
-		alert(
-			`Escalado a molde ${moldeObjetivoCm}cm (Factor: ${factor.toFixed(2)}x). Nuevo peso aprox: ${Math.round(pesoBaseReceta * factor)}g`
-		);
 	}
 
-	function aplicarEscaladoPax() {
-		if (!paxObjetivo || paxObjetivo <= 0) return;
-
-		// Paso 1: Masa Total = 65g * Personas
+	// Reactividad para Pax Objetivo (Input numérico)
+	// Si el usuario escribe "50", el slider y todo se ajusta solo.
+	$: if (paxObjetivo > 0) {
 		const masaTotalNecesaria = paxObjetivo * 65;
-
-		// Paso 2: Multiplicador = Masa Total / Peso Base Receta
-		// Nota: pesoBaseReceta ya se calcula sumando ingredientes (975.3g en ejemplo)
 		const factor = masaTotalNecesaria / pesoBaseReceta;
+		// Solo actualizamos si la diferencia es significativa para evitar loops de redondeo
+		const nuevasPorciones = Math.round(receta.porciones_base * factor * 10) / 10;
+		if (Math.abs(nuevasPorciones - porcionesActuales) > 0.1) {
+			porcionesActuales = nuevasPorciones;
+		}
+	}
 
-		// Ajustamos las porciones "visuales" para que reflejen el nuevo factor
-		porcionesActuales = Math.round(receta.porciones_base * factor * 10) / 10;
+	// Reactividad Recíproca: Si cambian las porciones (Slider), sugerir/seleccionar el molde adecuado
+	// MOLDES_AMARENA_REF es una lista ordenada de menor a mayor capacidad
+	$: if (pesoMasa_Escalado > 0 && MOLDES_AMARENA_REF.length > 0) {
+		// Encontrar el molde que tenga CAPACIDAD >= Masa Actual * 0.95 (5% tolerancia)
+		const capacidadRequerida = pesoMasa_Escalado;
+		const moldeAdecuado = MOLDES_AMARENA_REF.find((m) => {
+			const cap = tipoBatido === 'PONQUE' ? m.ponque_g : m.semiliquido_g;
+			return cap >= capacidadRequerida * 0.95;
+		});
 
-		alert(
-			`Planificación ${paxObjetivo} Pax Amarena:\nMasa Req: ${masaTotalNecesaria}g\nMultiplicador Receta: ${factor.toFixed(2)}x`
-		);
+		// Si encontramos un molde mejor y es diferente al actual, lo actualizamos.
+		// Nota: Esto NO dispara 'alCambiarMolde' porque no es un evento DOM, así que es seguro.
+		if (moldeAdecuado && moldeAdecuado.cm !== moldeObjetivoCm) {
+			moldeObjetivoCm = moldeAdecuado.cm;
+		}
 	}
 	async function guardarCambiosReceta() {
 		const { error } = await supabase
@@ -238,7 +266,7 @@
 							><span class="opacity-70">📏</span> {receta.molde || 'N/A'}</span
 						>
 						<span class="flex items-center gap-1"
-							><span class="opacity-70">⚖️</span> Rinde {receta.rendimiento_base_g || 0}g</span
+							><span class="opacity-70">⚖️</span> Masa {Math.round(pesoMasa_Base_Final || 0)}g</span
 						>
 						{#if receta.temperatura}<span>🌡️ {receta.temperatura}°C</span>{/if}
 					</div>
@@ -500,7 +528,7 @@
 								<td
 									class="bg-indigo-50/30 p-4 text-right font-bold text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300"
 								>
-									{cantEscalada}
+									{cantEscalada.toLocaleString('es-CO')}
 									<span class="text-xs font-normal text-indigo-500">{item.unidad}</span>
 								</td>
 
@@ -617,26 +645,54 @@
 					<h3 class="font-bold text-gray-900 dark:text-white">Motor de Producción</h3>
 				</div>
 
-				<!-- Métricas Amarena -->
-				<div class="mb-6 grid grid-cols-2 gap-4 rounded-xl bg-indigo-50 p-4 dark:bg-indigo-900/20">
-					<div>
-						<p class="text-xs font-bold text-gray-500 uppercase">Peso Total</p>
-						<p class="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-							{Math.round(pesoTotalEscalado)}g
-						</p>
-						<span class="text-xs text-indigo-300">
-							🏭 Peso Total: {Math.round(pesoTotalEscalado)}g | ❌ Multiplicador: {factorEscalado.toFixed(
-								2
-							)}x
-						</span>
+				<!-- Métricas Amarena (Desglose Claro) -->
+				<div class="mb-6 rounded-xl bg-indigo-50 p-4 dark:bg-indigo-900/20">
+					<div class="grid grid-cols-2 gap-4">
+						<!-- Columna 1: La Verdad de la Masa -->
+						<div class="border-r border-indigo-200 pr-2">
+							<p class="text-xs font-bold text-indigo-800 uppercase">Masa (Batido)</p>
+							<p class="text-2xl font-extrabold text-indigo-700 dark:text-indigo-400">
+								{Math.round(pesoMasa_Escalado).toLocaleString('es-CO')}g
+							</p>
+							<p class="text-[10px] leading-tight text-indigo-400">
+								Base para cálculo de porciones
+							</p>
+						</div>
+
+						<!-- Columna 2: Pax -->
+						<div class="pl-2">
+							<p class="text-xs font-bold text-indigo-800 uppercase">Pax Amarena (65g)</p>
+							<p class="text-2xl font-extrabold text-indigo-700 dark:text-indigo-400">
+								{porcionesAmarena} <span class="text-sm font-normal">u</span>
+							</p>
+							<p class="text-[10px] leading-tight text-indigo-400">
+								{Math.round(pesoMasa_Escalado).toLocaleString('es-CO')}g / 65g = {porcionesAmarena}
+							</p>
+						</div>
 					</div>
-					<div>
-						<p class="text-xs font-bold text-gray-500 uppercase">
-							Pax Amarena ({65}g)
-						</p>
-						<p class="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-							{porcionesAmarena} <span class="text-sm font-normal">u</span>
-						</p>
+
+					<!-- Desglose Informativo (Separado) -->
+					<div
+						class="mt-3 border-t border-indigo-200 pt-2 text-xs text-gray-600 dark:text-gray-400"
+					>
+						<div class="flex justify-between">
+							<span>+ Masa (Batido):</span>
+							<span>{Math.round(pesoMasa_Escalado).toLocaleString('es-CO')}g</span>
+						</div>
+						<div class="flex justify-between text-pink-600 dark:text-pink-400">
+							<span>+ Rellenos/Cubiertas (Info):</span>
+							<span
+								>{Math.round(
+									Math.max(0, pesoFisicoTotal_Escalado - pesoMasa_Escalado)
+								).toLocaleString('es-CO')}g</span
+							>
+						</div>
+						<div
+							class="mt-1 flex justify-between border-t border-gray-300 pt-1 font-bold text-gray-800 dark:text-white"
+						>
+							<span>= Peso Total Físico:</span>
+							<span>{Math.round(pesoFisicoTotal_Escalado).toLocaleString('es-CO')}g</span>
+						</div>
 					</div>
 				</div>
 
@@ -646,7 +702,8 @@
 					<div class="flex gap-2">
 						<select
 							bind:value={moldeObjetivoCm}
-							class="flex-1 rounded-lg border-gray-200 text-sm dark:bg-gray-700"
+							on:change={alCambiarMolde}
+							class="flex-1 rounded-lg border-gray-200 text-sm font-bold text-indigo-700 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-indigo-300"
 						>
 							{#each MOLDES_AMARENA_REF as m}
 								<option value={m.cm}>Molde {m.cm}cm</option>
@@ -654,19 +711,17 @@
 						</select>
 						<select
 							bind:value={tipoBatido}
-							class="w-24 rounded-lg border-gray-200 text-sm dark:bg-gray-700"
+							on:change={alCambiarMolde}
+							class="w-28 rounded-lg border-gray-200 text-sm text-gray-600 dark:bg-gray-700"
 						>
 							<option value="PONQUE">Ponqué</option>
 							<option value="SEMILIQUIDO">Líquido</option>
 						</select>
 					</div>
-					<button
-						on:click={aplicarEscaladoMolde}
-						class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow transition hover:bg-indigo-700"
-					>
-						🔄 Escalar Receta
-					</button>
-					<p class="text-center text-xs text-gray-400">Basado en tabla de referencia Amarena</p>
+					<!-- Botón Eliminado: Ahora es automático -->
+					<p class="text-center text-xs text-indigo-400">
+						👆 Selecciona para escalar automáticamente
+					</p>
 				</div>
 
 				<div class="my-4 border-t border-gray-100 dark:border-gray-700"></div>
@@ -680,20 +735,15 @@
 						<input
 							type="number"
 							bind:value={paxObjetivo}
-							class="w-full rounded-lg border-gray-200 text-sm dark:bg-gray-700"
-							placeholder="Ej: 100 personas"
+							class="w-full rounded-lg border-gray-200 text-sm focus:ring-2 focus:ring-pink-500 dark:bg-gray-700"
+							placeholder="Ej: 50"
 						/>
-						<button
-							on:click={aplicarEscaladoPax}
-							class="rounded-lg bg-pink-600 px-4 py-2 text-sm font-bold text-white shadow transition hover:bg-pink-700"
-						>
-							Calcular
-						</button>
+						<!-- Botón Eliminado: Es Reactivo -->
 					</div>
 					{#if paxObjetivo > 0 && factorEscalado > 0}
 						<div class="rounded border border-yellow-200 bg-yellow-50 p-2 text-xs text-yellow-800">
 							<span class="font-bold">📝 Orden de Producción:</span><br />
-							- Masa Total:
+							- Masa Batido Requerida:
 							<strong
 								>{formatCurrency(paxObjetivo * 65)
 									.replace('$', '')

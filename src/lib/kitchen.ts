@@ -56,12 +56,16 @@ export function calcularCostoCIF(costoPrimo: number, porcentaje: number = 20): n
 }
 
 export function calcularUtilidad(costoReal: number, porcentaje: number = 30): number {
-    // Interpretación Amarena: "Utilidad = Costos reales ÷ Porcentaje"
-    // Si el usuario ingresa 30 (%), asumimos que busca una rentabilidad basada en divisor.
-    // PRECAUCIÓN: Esta fórmula genera márgenes altos (ej: 100 / 0.3 = 333 utilidad).
-    // Si porcentaje es 0, utilidad es 0 para evitar Infinity.
+    // AJUSTE (Feb 2026): Cambio a Fórmula de Margen Bruto (Gross Margin)
+    // El usuario define qué % del precio final quiere que sea ganancia.
+    // Fórmula: Precio = Costo / (1 - %)
+    // Utilidad = Precio - Costo
+    // Derivada: Utilidad = Costo * ( % / (100 - %) )
+
     if (!porcentaje || porcentaje === 0) return 0;
-    return costoReal / (porcentaje / 100);
+    if (porcentaje >= 100) return costoReal * 9; // Evitar división por cero (900% markup fallback)
+
+    return costoReal * (porcentaje / (100 - porcentaje));
 }
 
 export function calcularPrecioVenta(costoReal: number, utilidad: number, empaque: number = 0): number {
@@ -85,16 +89,62 @@ export function calcularPesoReceta(receta: Receta): number {
         // Si es unidad, necesitamos saber cuánto pesa la unidad. Por ahora, si es unidad y no tenemos peso, alertar o usar 0.
         // MEJORA: En el futuro, usar campo 'peso_unidad' del ingrediente.
         if (item.unidad === 'unidad') {
-            // Hotfix: Si es huevo (aprox 50g), si no, 0. Esto es una limitación actual.
-            // Lo ideal es que la receta tenga el peso en gramos explícito o factor de conversión.
-            // Por ahora, asumimos que el usuario ingresa GRAMOS en la receta para mayor precisión, como lo dicta Amarena.
-            pesoItem = 0;
+            // Hotfix (Feb 2026): Los huevos pesan aprox 50g-55g clase AA.
+            // Si el ingrediente es "Huevos" (o similar), sumamos peso.
+            const nombre = (item.ingrediente?.nombre || "").toLowerCase();
+            if (nombre.includes('huevo')) {
+                pesoItem = (item.cantidad || 0) * 50; // 50g por huevo
+            } else {
+                // Otros items por unidad (ej: cajas) no suman "peso comestible"
+                pesoItem = 0;
+            }
         } else {
             pesoItem = item.cantidad || 0;
         }
 
         // Si es sub-receta, el peso es la cantidad que se usa de esa sub-receta (ya está en gramos en la composición)
         // No necesitamos recursividad profunda para el peso *usado*, solo sumar la cantidad listada.
+        return total + pesoItem;
+    }, 0);
+}
+
+/**
+ * Calcula SOLO el peso de la "Masa" (Batido/Ponqué) excluyendo Rellenos y Coberturas.
+ * Se usa para la regla de Porciones Amarena (65g de Masa).
+ */
+export function calcularPesoMasaAmarena(receta: Receta): number {
+    if (!receta.composicion || receta.composicion.length === 0) {
+        return receta.rendimiento_base_g || 0;
+    }
+
+    return receta.composicion.reduce((total, item) => {
+        let pesoItem = 0;
+
+        // 1. Ingredientes (Materia Prima): SIEMPRE SUMAN (Harina, Huevos, etc. son parte de la masa)
+        if (item.ingrediente || item.child_ingredient_id) {
+            // Lógica idéntica a calcularPesoReceta para Huevos
+            if (item.unidad === 'unidad') {
+                const nombre = (item.ingrediente?.nombre || "").toLowerCase();
+                if (nombre.includes('huevo')) {
+                    pesoItem = (item.cantidad || 0) * 50;
+                } else {
+                    pesoItem = 0;
+                }
+            } else {
+                pesoItem = item.cantidad || 0;
+            }
+        }
+        // 2. Sub-Recetas: FILTRAR
+        else if (item.sub_receta || item.child_recipe_id) {
+            const cat = (item.sub_receta?.categoria || "").toLowerCase();
+            // LISTA NEGRA: Rellenos, Coberturas, Decoración, Salsas
+            if (['rellenos', 'coberturas', 'decoracion', 'salsas', 'ganache'].some(c => cat.includes(c))) {
+                return total; // No suma al Peso Masa
+            }
+            // Si es 'bases', 'tortas', etc., SUMA.
+            pesoItem = item.cantidad || 0;
+        }
+
         return total + pesoItem;
     }, 0);
 }
