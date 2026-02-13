@@ -14,7 +14,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
+		"lint": "prettier --check . && eslint .",
+		"deploy": "npm run build && wrangler pages deploy .svelte-kit/cloudflare"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -46,6 +47,6 @@
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.49.8",
-		"dotenv": "^16.5.0"
+		"dotenv": "^16.6.1"
 	}
 }

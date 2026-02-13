@@ -1,0 +1,65 @@
+<script lang="ts">
+	import { goto } from '$app/navigation';
+	import RecetaCard from '$lib/components/RecetaCard.svelte';
+	import { supabase } from '$lib/supabaseClient';
+
+	export let data;
+	let recetas = data.recetas;
+
+	async function crearReceta() {
+		const nombre = prompt('Nombre de la nueva receta:');
+		if (!nombre) return;
+
+		const { data: nueva, error } = await supabase
+			.from('recetas')
+			.insert([{ nombre, categoria: 'tortas', porciones_base: 8 }])
+			.select()
+			.single();
+
+		if (error) {
+			alert('Error: ' + error.message);
+		} else {
+			goto(`/admin/recetas/${nueva.id}`);
+		}
+	}
+</script>
+
+<svelte:head>
+	<title>Recetario Inteligente | Olga's Smart Kitchen</title>
+</svelte:head>
+
+<div class="space-y-8">
+	<div class="flex flex-col items-center justify-between gap-4 md:flex-row">
+		<div>
+			<h1
+				class="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-3xl font-extrabold text-transparent dark:from-pink-400 dark:to-purple-400"
+			>
+				📖 Recetario Inteligente
+			</h1>
+			<p class="mt-1 text-gray-500 dark:text-gray-400">
+				Tus fórmulas maestras con costos calculados en tiempo real.
+			</p>
+		</div>
+		<button
+			on:click={crearReceta}
+			class="flex transform items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 px-6 py-3 font-bold text-white shadow-lg transition hover:scale-105 hover:from-pink-600 hover:to-purple-700"
+		>
+			<span>✨ Crear Nueva Receta</span>
+		</button>
+	</div>
+
+	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+		{#each recetas as receta (receta.id)}
+			<RecetaCard {receta} costoTotal={receta.costoTotal} />
+		{/each}
+
+		<!-- Card para agregar visualmente -->
+		<button
+			on:click={crearReceta}
+			class="flex h-64 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-pink-200 bg-pink-50/10 transition hover:border-pink-400 hover:bg-pink-50/50 dark:border-gray-700 dark:hover:bg-gray-800/50"
+		>
+			<span class="mb-2 text-4xl">➕</span>
+			<span class="font-medium text-pink-500">Agregar Receta</span>
+		</button>
+	</div>
+</div>

@@ -38,14 +38,14 @@
 >
 	<!-- Fondo decorativo estilo blur -->
 	<div
-		class="absolute -left-10 -top-10 h-96 w-96 animate-pulse rounded-full bg-pink-300 opacity-20 blur-3xl"
+		class="absolute -top-10 -left-10 h-96 w-96 animate-pulse rounded-full bg-pink-300 opacity-20 blur-3xl"
 	></div>
 	<div
-		class="absolute bottom-0 right-0 h-72 w-72 animate-pulse rounded-full bg-purple-200 opacity-20 blur-2xl delay-300"
+		class="absolute right-0 bottom-0 h-72 w-72 animate-pulse rounded-full bg-purple-200 opacity-20 blur-2xl delay-300"
 	></div>
 
 	<!-- Floating Controls -->
-	<div class="animate-fade-in fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+	<div class="animate-fade-in fixed right-6 bottom-6 z-50 flex flex-col gap-3">
 		<button
 			on:click={toggleDarkMode}
 			aria-label="Toggle theme"
@@ -68,7 +68,7 @@
 
 	<!-- Sidebar -->
 	<aside
-		class="animate-fade-in z-10 w-full flex-shrink-0 space-y-10 border-b border-pink-200 bg-white/50 p-6 shadow-xl backdrop-blur-xl sm:p-8 md:w-64 md:rounded-r-2xl md:border-b-0 md:border-r dark:border-gray-700 dark:bg-gray-800/50"
+		class="animate-fade-in z-10 w-full flex-shrink-0 space-y-10 border-b border-pink-200 bg-white/50 p-6 shadow-xl backdrop-blur-xl sm:p-8 md:w-64 md:rounded-r-2xl md:border-r md:border-b-0 dark:border-gray-700 dark:bg-gray-800/50"
 	>
 		<h2
 			class="animate-fade-in text-4xl font-extrabold tracking-tight text-pink-600 dark:text-pink-400"
@@ -99,6 +99,31 @@
 				class="flex items-center gap-3 rounded-2xl px-4 py-2 text-base font-medium text-gray-800 transition-all duration-300 hover:scale-[1.02] hover:bg-pink-100 active:scale-95 dark:text-gray-200 dark:hover:bg-pink-900/30"
 			>
 				➕ Agregar producto
+			</a>
+
+			<div
+				class="pt-4 pb-1 pl-4 text-xs font-semibold tracking-wider text-gray-400 uppercase dark:text-gray-500"
+			>
+				Olga's Smart Kitchen
+			</div>
+
+			<a
+				href="/admin/recetas"
+				class="flex items-center gap-3 rounded-2xl px-4 py-2 text-base font-medium text-gray-800 transition-all duration-300 hover:scale-[1.02] hover:bg-pink-100 active:scale-95 dark:text-gray-200 dark:hover:bg-pink-900/30"
+			>
+				📖 Recetario
+			</a>
+			<a
+				href="/admin/ingredientes"
+				class="flex items-center gap-3 rounded-2xl px-4 py-2 text-base font-medium text-gray-800 transition-all duration-300 hover:scale-[1.02] hover:bg-pink-100 active:scale-95 dark:text-gray-200 dark:hover:bg-pink-900/30"
+			>
+				🧮 Insumos
+			</a>
+			<a
+				href="/admin/compras"
+				class="flex items-center gap-3 rounded-2xl px-4 py-2 text-base font-medium text-gray-800 transition-all duration-300 hover:scale-[1.02] hover:bg-pink-100 active:scale-95 dark:text-gray-200 dark:hover:bg-pink-900/30"
+			>
+				🛒 Compras de la semana
 			</a>
 		</nav>
 		<div class="animate-fade-in border-t border-pink-200 pt-6 dark:border-gray-700">
