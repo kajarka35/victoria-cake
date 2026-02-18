@@ -7,6 +7,7 @@
 		calcularPrecioVenta,
 		formatCurrency
 	} from '$lib/kitchen';
+	import { supabase } from '$lib/supabaseClient';
 	import { page } from '$app/stores';
 	import { fade, slide } from 'svelte/transition';
 	import { onDestroy } from 'svelte';
@@ -52,7 +53,7 @@
 	}
 	$: ingredientesEscalados = calcularIngredientes(recetaBase, factorEscala);
 
-	// === Agrupación por Categoría (Tazón) ===
+	// Agrupación por Categoría (Tazón)
 	$: gruposCategoria = agruparPorCategoria(ingredientesEscalados);
 
 	function agruparPorCategoria(items: ReturnType<typeof calcularIngredientes>) {
@@ -65,12 +66,12 @@
 		return [...grupos.entries()].map(([nombre, items]) => ({ nombre, items }));
 	}
 
-	// === Barra de Progreso ===
+	// Barra de Progreso
 	$: totalItems = ingredientesEscalados.length;
 	$: completados = itemsProcesados.size;
 	$: progresoPct = totalItems > 0 ? (completados / totalItems) * 100 : 0;
 
-	// === Resumen de Costos (usa calcularCostoReceta recursivo) ===
+	// Resumen de Costos (usa calcularCostoReceta recursivo)
 	const costoBaseReceta = calcularCostoReceta(recetaBase);
 	$: costoPrimo = costoBaseReceta * factorEscala;
 	$: costoCIF = (costoPrimo * (recetaBase.porcentaje_cif || 0)) / 100;
@@ -83,15 +84,14 @@
 	);
 	$: costoPorPorcion = costoTotal / (porcionesActuales || 1);
 
-	// === MEJORA 5: Responsable Editable ===
+	// Responsable Editable
 	let responsable = '';
 
-	// === MEJORA 6: Timer Integrado ===
+	// Timer Integrado
 	let timerSeconds = 0;
 	let timerRunning = false;
 	let timerInterval: ReturnType<typeof setInterval> | null = null;
 
-	// Parsear minutos desde el texto de tiempo_horneado (ej: "80 min" → 4800 seg)
 	function parseTiempoHorneado(): number {
 		if (!recetaBase.tiempo_horneado) return 0;
 		const match = recetaBase.tiempo_horneado.match(/(\d+)/);
@@ -106,12 +106,10 @@
 		timerRunning = true;
 		timerInterval = setInterval(() => {
 			timerSeconds++;
-			// Alarma al completar
 			if (timerSeconds === timerTotalSeconds && timerTotalSeconds > 0) {
 				timerRunning = false;
 				if (timerInterval) clearInterval(timerInterval);
 				timerInterval = null;
-				// Vibración + alert
 				if ('vibrate' in navigator) navigator.vibrate([200, 100, 200, 100, 400]);
 			}
 		}, 1000);
@@ -144,7 +142,7 @@
 		if (timerInterval) clearInterval(timerInterval);
 	});
 
-	// === MEJORA 7: Sub-recetas Expandibles ===
+	// Sub-recetas Expandibles
 	let expandedSubRecetas: Set<string> = new Set();
 
 	function toggleSubReceta(id: string) {
@@ -156,7 +154,6 @@
 		expandedSubRecetas = expandedSubRecetas;
 	}
 
-	// Obtener sub-receta completa de la composición
 	function getSubRecetaComposicion(nombre: string) {
 		if (!recetaBase.composicion) return [];
 		const comp = recetaBase.composicion.find((c) => c.sub_receta && c.sub_receta.nombre === nombre);
@@ -203,7 +200,6 @@
 		}
 	}
 
-	// Emojis por categoría de ingrediente
 	function catEmoji(cat: string): string {
 		const map: Record<string, string> = {
 			HARINAS: '🌾',
@@ -220,6 +216,38 @@
 		};
 		return map[cat] || '📦';
 	}
+
+	// === MEJORA 8: QR Code ===
+	$: qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent($page.url.href)}&size=120&margin=1`;
+
+	// === MEJORA 10: Historial de Producción ===
+	let guardando = false;
+	let guardadoExitoso = false;
+
+	async function guardarProduccion() {
+		if (guardando) return;
+		guardando = true;
+		guardadoExitoso = false;
+
+		const { error } = await supabase.from('produccion_historial').insert({
+			receta_id: recetaBase.id,
+			receta_nombre: recetaBase.nombre,
+			responsable: responsable || null,
+			porciones: porcionesActuales,
+			molde_cm: moldeSeleccionado,
+			factor_escala: factorEscala,
+			costo_primo: Math.round(costoPrimo * 100) / 100,
+			costo_total: Math.round(costoTotal * 100) / 100,
+			precio_sugerido: Math.round(precioVentaSugerido * 100) / 100,
+			notas: null
+		});
+
+		guardando = false;
+		if (!error) {
+			guardadoExitoso = true;
+			setTimeout(() => (guardadoExitoso = false), 4000);
+		}
+	}
 </script>
 
 <div class="print-container min-h-screen bg-white p-8 font-sans text-gray-900">
@@ -227,17 +255,38 @@
 	<header
 		class="mb-6 flex flex-col items-start justify-between gap-4 border-b-4 border-gray-900 pb-6 md:flex-row md:items-center"
 	>
-		<div>
-			<h1 class="text-3xl font-extrabold tracking-tight uppercase md:text-4xl">
-				{recetaBase.nombre}
-			</h1>
-			<p class="text-lg text-gray-500">
-				Hoja de Producción · <span class="font-semibold text-pink-600">{porcionesActuales} pax</span
-				>
-			</p>
+		<div class="flex items-start gap-5">
+			<!-- MEJORA 8: QR Code para print -->
+			<img
+				src={qrUrl}
+				alt="QR de receta"
+				class="hidden h-16 w-16 rounded border border-gray-200 print:block"
+			/>
+			<div>
+				<h1 class="text-3xl font-extrabold tracking-tight uppercase md:text-4xl">
+					{recetaBase.nombre}
+				</h1>
+				<p class="text-lg text-gray-500">
+					Hoja de Producción · <span class="font-semibold text-pink-600"
+						>{porcionesActuales} pax</span
+					>
+				</p>
+			</div>
 		</div>
 
-		<div class="flex items-center gap-6">
+		<div class="flex items-center gap-4">
+			<!-- MEJORA 8: QR visible en pantalla -->
+			<div class="no-print group relative">
+				<img
+					src={qrUrl}
+					alt="QR escanea para abrir en celular"
+					class="h-14 w-14 rounded-lg border-2 border-gray-200 opacity-60 transition hover:opacity-100 hover:border-pink-400"
+				/>
+				<span class="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-0.5 text-[9px] font-bold text-white opacity-0 transition group-hover:opacity-100">
+					📱 Escanear en celular
+				</span>
+			</div>
+
 			<div class="no-print flex flex-col gap-1">
 				<label for="molde" class="text-sm font-semibold text-gray-500 uppercase"
 					>Molde Objetivo</label
@@ -267,11 +316,10 @@
 		</div>
 	</header>
 
-	<!-- Info Grid con Temperatura, Tiempo y Responsable Editable -->
-	<section class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-5">
-		<!-- Fecha -->
+	<!-- Info Grid -->
+	<section class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-5 print:grid-cols-5 print:gap-2">
 		<div
-			class="rounded-xl border border-gray-100 bg-gray-50 p-4 print:border-gray-300 print:bg-transparent"
+			class="rounded-xl border border-gray-100 bg-gray-50 p-4 print:rounded-none print:border-gray-300 print:bg-transparent print:p-2"
 		>
 			<span class="block text-[10px] font-bold text-gray-400 uppercase">Fecha Producción</span>
 			<span class="text-sm font-semibold"
@@ -283,36 +331,28 @@
 				})}</span
 			>
 		</div>
-
-		<!-- Rendimiento -->
 		<div
-			class="rounded-xl border border-gray-100 bg-gray-50 p-4 print:border-gray-300 print:bg-transparent"
+			class="rounded-xl border border-gray-100 bg-gray-50 p-4 print:rounded-none print:border-gray-300 print:bg-transparent print:p-2"
 		>
 			<span class="block text-[10px] font-bold text-gray-400 uppercase">Rendimiento</span>
 			<span class="text-lg font-black text-gray-900"
 				>~{Math.round((recetaBase.rendimiento_base_g || 0) * factorEscala)} g</span
 			>
 		</div>
-
-		<!-- Temperatura -->
 		<div
-			class="rounded-xl border-2 border-red-100 bg-red-50 p-4 print:border-gray-300 print:bg-transparent"
+			class="rounded-xl border-2 border-red-100 bg-red-50 p-4 print:rounded-none print:border-gray-400 print:bg-transparent print:p-2"
 		>
-			<span class="block text-[10px] font-bold text-red-400 uppercase">🌡️ Temperatura</span>
-			<span class="text-xl font-black text-red-600">{recetaBase.temperatura || '—'}</span>
+			<span class="block text-[10px] font-bold text-red-400 uppercase print:text-gray-600">🌡️ Temperatura</span>
+			<span class="text-xl font-black text-red-600 print:text-black">{recetaBase.temperatura || '—'}</span>
 		</div>
-
-		<!-- Tiempo Horneado -->
 		<div
-			class="rounded-xl border-2 border-amber-100 bg-amber-50 p-4 print:border-gray-300 print:bg-transparent"
+			class="rounded-xl border-2 border-amber-100 bg-amber-50 p-4 print:rounded-none print:border-gray-400 print:bg-transparent print:p-2"
 		>
-			<span class="block text-[10px] font-bold text-amber-500 uppercase">⏱️ Horneado</span>
-			<span class="text-xl font-black text-amber-700">{recetaBase.tiempo_horneado || '—'}</span>
+			<span class="block text-[10px] font-bold text-amber-500 uppercase print:text-gray-600">⏱️ Horneado</span>
+			<span class="text-xl font-black text-amber-700 print:text-black">{recetaBase.tiempo_horneado || '—'}</span>
 		</div>
-
-		<!-- MEJORA 5: Responsable Editable -->
 		<div
-			class="rounded-xl border border-gray-100 bg-gray-50 p-4 print:border-gray-300 print:bg-transparent"
+			class="rounded-xl border border-gray-100 bg-gray-50 p-4 print:rounded-none print:border-gray-300 print:bg-transparent print:p-2"
 		>
 			<label for="responsable" class="block text-[10px] font-bold text-gray-400 uppercase"
 				>Responsable</label
@@ -322,12 +362,12 @@
 				type="text"
 				bind:value={responsable}
 				placeholder="Nombre del pastelero..."
-				class="mt-1 w-full border-b-2 border-gray-300 bg-transparent text-sm font-semibold text-gray-900 transition-colors outline-none placeholder:text-gray-300 focus:border-pink-500 print:border-gray-800"
+				class="mt-1 w-full border-b-2 border-gray-300 bg-transparent text-sm font-semibold text-gray-900 outline-none transition-colors placeholder:text-gray-300 focus:border-pink-500 print:border-gray-800"
 			/>
 		</div>
 	</section>
 
-	<!-- === MEJORA 6: Timer de Horneado === -->
+	<!-- Timer de Horneado -->
 	{#if tiempoHorneadoSeg > 0}
 		<div
 			class="no-print mb-8 rounded-2xl border-2 p-5 transition-colors
@@ -390,7 +430,6 @@
 				</div>
 			</div>
 
-			<!-- Barra de Timer -->
 			{#if timerTotalSeconds > 0}
 				<div class="relative mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200">
 					<div
@@ -424,7 +463,11 @@
 		<div class="relative h-3 w-full overflow-hidden rounded-full bg-gray-200">
 			<div
 				class="absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out
-					{progresoPct >= 100 ? 'bg-green-500' : progresoPct > 50 ? 'bg-indigo-500' : 'bg-pink-500'}"
+					{progresoPct >= 100
+					? 'bg-green-500'
+					: progresoPct > 50
+						? 'bg-indigo-500'
+						: 'bg-pink-500'}"
 				style="width: {progresoPct}%"
 			></div>
 		</div>
@@ -436,112 +479,131 @@
 	</div>
 
 	<!-- Checklist Agrupada por Categoría -->
-	<div class="space-y-6">
-		<h2 class="mb-2 text-2xl font-bold tracking-wider text-gray-400 uppercase">Mise en Place</h2>
+	<div class="space-y-6 print:space-y-3">
+		<h2 class="mb-2 text-2xl font-bold tracking-wider text-gray-400 uppercase print:text-lg print:text-black">
+			Mise en Place
+		</h2>
 
 		{#each gruposCategoria as grupo}
-			<div class="overflow-hidden rounded-xl border border-gray-100">
+			<div class="overflow-hidden rounded-xl border border-gray-100 print:rounded-none print:border-gray-400">
 				<!-- Header de Grupo -->
-				<div class="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-5 py-3">
-					<span class="text-lg">{catEmoji(grupo.nombre)}</span>
-					<h3 class="text-xs font-black tracking-[0.15em] text-gray-500 uppercase">
+				<div class="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-5 py-3 print:bg-gray-200 print:py-1 print:px-3">
+					<span class="text-lg print:text-sm">{catEmoji(grupo.nombre)}</span>
+					<h3 class="text-xs font-black tracking-[0.15em] text-gray-500 uppercase print:text-black">
 						{grupo.nombre}
 					</h3>
-					<span class="ml-auto text-xs font-medium text-gray-400">{grupo.items.length} items</span>
+					<span class="ml-auto text-xs font-medium text-gray-400"
+						>{grupo.items.length} items</span
+					>
 				</div>
 
 				<!-- Items del grupo -->
-				<div class="divide-y divide-gray-100">
+				<div class="divide-y divide-gray-100 print:divide-gray-300">
 					{#each grupo.items as item (item.id)}
 						<div>
 							<!-- Fila principal -->
 							<div
 								role="button"
 								tabindex="0"
-								class="group flex cursor-pointer items-center justify-between px-5 py-4 transition-colors hover:bg-yellow-50 print:py-3"
+								class="group flex cursor-pointer items-center justify-between px-5 py-4 transition-colors hover:bg-yellow-50 print:py-2 print:px-3"
 								on:click={() => toggleCheck(item.id)}
 								on:keydown={(e) => handleKeydown(e, item.id)}
 							>
-								<div class="flex items-center gap-5">
+								<div class="flex items-center gap-5 print:gap-3">
 									<!-- Checkbox -->
 									<div
 										class="flex h-10 w-10 items-center justify-center rounded-lg border-3 transition-all duration-200
 											{itemsProcesados.has(item.id)
 											? 'scale-110 border-green-500 bg-green-500 text-white'
-											: 'border-gray-300 bg-white text-transparent group-hover:border-gray-400'}"
+											: 'border-gray-300 bg-white text-transparent group-hover:border-gray-400'}
+											print:h-5 print:w-5 print:rounded print:border-2 print:border-gray-600"
 									>
 										<svg
-											class="h-6 w-6"
+											class="h-6 w-6 print:h-3 print:w-3"
 											fill="none"
 											viewBox="0 0 24 24"
 											stroke="currentColor"
 											stroke-width="4"
 										>
-											<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M5 13l4 4L19 7"
+											/>
 										</svg>
 									</div>
 
 									<div class="flex flex-col">
 										<span
-											class="text-lg font-bold text-gray-900 transition-all {itemsProcesados.has(
-												item.id
-											)
+											class="text-lg font-bold text-gray-900 transition-all print:text-sm
+												{itemsProcesados.has(item.id)
 												? 'text-gray-400 line-through'
 												: ''}"
 										>
 											{item.nombre}
 										</span>
 										{#if item.tipo === 'Sub-Receta'}
-											<!-- MEJORA 7: Botón expandir sub-receta -->
 											<button
-												class="mt-0.5 flex items-center gap-1 text-[10px] font-semibold tracking-wider text-pink-500 uppercase transition-colors hover:text-pink-700"
+												class="no-print mt-0.5 flex items-center gap-1 text-[10px] font-semibold tracking-wider text-pink-500 uppercase transition-colors hover:text-pink-700"
 												on:click|stopPropagation={() => toggleSubReceta(item.id)}
 											>
 												<span
-													class="transition-transform duration-200 {expandedSubRecetas.has(item.id)
+													class="transition-transform duration-200 {expandedSubRecetas.has(
+														item.id
+													)
 														? 'rotate-90'
-														: ''}">▶</span
+														: ''}"
 												>
+													▶
+												</span>
 												Sub-Receta · ver desglose
 											</button>
+											<span class="hidden text-[8px] font-semibold text-gray-500 uppercase print:inline">SUB-RECETA</span>
 										{/if}
 									</div>
 								</div>
 
 								<div class="text-right">
 									<span
-										class="block text-3xl font-black text-gray-900 tabular-nums {itemsProcesados.has(
-											item.id
-										)
-											? 'text-gray-300'
-											: ''}"
+										class="block text-3xl font-black text-gray-900 tabular-nums print:text-base
+											{itemsProcesados.has(item.id) ? 'text-gray-300' : ''}"
 									>
 										{(Math.round(item.cantidad * 100) / 100).toFixed(2)}
 									</span>
-									<span class="text-xs font-bold text-gray-500 uppercase">{item.unidad}</span>
+									<span class="text-xs font-bold text-gray-500 uppercase"
+										>{item.unidad}</span
+									>
 								</div>
 							</div>
 
-							<!-- MEJORA 7: Panel expandido de sub-receta -->
+							<!-- Panel expandido de sub-receta -->
 							{#if item.tipo === 'Sub-Receta' && expandedSubRecetas.has(item.id)}
 								<div
 									transition:slide|local={{ duration: 250 }}
 									class="border-t border-pink-100 bg-pink-50/40 px-5 py-3"
 								>
 									<div class="ml-14 space-y-1.5">
-										<span class="text-[10px] font-black tracking-wider text-pink-400 uppercase">
+										<span
+											class="text-[10px] font-black tracking-wider text-pink-400 uppercase"
+										>
 											Ingredientes de {item.nombre}
 										</span>
 										{#each getSubRecetaComposicion(item.nombre) as subItem}
 											<div class="flex items-center justify-between py-1">
 												<span class="text-sm text-gray-700">
-													{subItem.ingrediente?.nombre || subItem.sub_receta?.nombre || '?'}
+													{subItem.ingrediente?.nombre ||
+														subItem.sub_receta?.nombre ||
+														'?'}
 												</span>
 												<span class="text-sm font-bold text-gray-600 tabular-nums">
-													{(Math.round((subItem.cantidad || 0) * factorEscala * 100) / 100).toFixed(
-														2
-													)}
-													<span class="text-xs font-normal text-gray-400">{subItem.unidad}</span>
+													{(
+														Math.round(
+															(subItem.cantidad || 0) * factorEscala * 100
+														) / 100
+													).toFixed(2)}
+													<span class="text-xs font-normal text-gray-400"
+														>{subItem.unidad}</span
+													>
 												</span>
 											</div>
 										{:else}
@@ -562,44 +624,77 @@
 	<!-- Resumen de Costos (Mini-Ledger) -->
 	{#if costoPrimo > 0}
 		<section
-			class="mt-10 rounded-2xl border-2 border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-6 print:border-gray-300 print:bg-transparent"
+			class="mt-10 rounded-2xl border-2 border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-6 print:mt-6 print:rounded-none print:border-gray-400 print:bg-transparent print:p-3"
 		>
-			<h3 class="mb-4 text-xs font-black tracking-[0.2em] text-indigo-400 uppercase">
+			<h3 class="mb-4 text-xs font-black tracking-[0.2em] text-indigo-400 uppercase print:text-black">
 				💰 Resumen Financiero
 			</h3>
-			<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+			<div class="grid grid-cols-2 gap-4 md:grid-cols-4 print:grid-cols-4 print:gap-2">
 				<div>
 					<span class="block text-[10px] font-bold text-gray-400 uppercase">Costo Insumos</span>
-					<span class="text-lg font-black text-gray-900">{formatCurrency(costoPrimo)}</span>
+					<span class="text-lg font-black text-gray-900 print:text-sm">{formatCurrency(costoPrimo)}</span>
 				</div>
 				<div>
 					<span class="block text-[10px] font-bold text-gray-400 uppercase"
 						>COGS (+ CIF {recetaBase.porcentaje_cif || 0}%)</span
 					>
-					<span class="text-lg font-black text-indigo-600">{formatCurrency(costoTotal)}</span>
+					<span class="text-lg font-black text-indigo-600 print:text-sm print:text-black">{formatCurrency(costoTotal)}</span>
 				</div>
 				<div>
 					<span class="block text-[10px] font-bold text-gray-400 uppercase">Precio Sugerido</span>
-					<span class="text-lg font-black text-green-600"
+					<span class="text-lg font-black text-green-600 print:text-sm print:text-black"
 						>{formatCurrency(precioVentaSugerido)}</span
 					>
 				</div>
 				<div>
 					<span class="block text-[10px] font-bold text-gray-400 uppercase">Costo / Porción</span>
-					<span class="text-lg font-black text-pink-600">{formatCurrency(costoPorPorcion)}</span>
+					<span class="text-lg font-black text-pink-600 print:text-sm print:text-black"
+						>{formatCurrency(costoPorPorcion)}</span
+					>
 				</div>
 			</div>
 		</section>
 	{/if}
 
+	<!-- === MEJORA 10: Botón Guardar Producción === -->
+	<div class="no-print mt-8 flex items-center justify-center gap-4">
+		<button
+			on:click={guardarProduccion}
+			disabled={guardando}
+			class="group flex items-center gap-3 rounded-2xl border-2 px-8 py-4 text-lg font-bold transition-all active:scale-95
+				{guardadoExitoso
+				? 'border-green-400 bg-green-50 text-green-700'
+				: 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:border-indigo-400 hover:bg-indigo-100 hover:shadow-lg'}
+				{guardando ? 'cursor-wait opacity-60' : ''}"
+		>
+			{#if guardando}
+				<span class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-indigo-300 border-t-indigo-700"></span>
+				Guardando...
+			{:else if guardadoExitoso}
+				<span class="text-xl">✅</span>
+				¡Producción Registrada!
+			{:else}
+				<span class="text-xl transition-transform group-hover:scale-110">📋</span>
+				Registrar Producción
+			{/if}
+		</button>
+	</div>
+
 	<!-- Notas Footer -->
-	<div class="mt-12 border-t-4 border-gray-200 pt-8 print:mt-8">
-		<h3 class="mb-4 text-sm font-bold text-gray-400 uppercase">
+	<div class="mt-12 border-t-4 border-gray-200 pt-8 print:mt-6 print:border-t-2 print:pt-4">
+		<h3 class="mb-4 text-sm font-bold text-gray-400 uppercase print:text-black">
 			Observaciones y Control de Calidad
 		</h3>
 		<div
-			class="h-32 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 print:border-gray-800 print:bg-white"
+			class="h-32 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 print:h-20 print:rounded-none print:border-gray-800 print:bg-white"
 		></div>
+	</div>
+
+	<!-- Print Footer -->
+	<div class="hidden print:block mt-4 pt-2 border-t border-gray-300 text-center">
+		<p class="text-[8px] text-gray-400">
+			Victoria Cake · Smart Kitchen V2 · Generado {new Date().toLocaleDateString('es-CO')} · {recetaBase.nombre} · Molde {moldeSeleccionado}cm · {porcionesActuales} pax
+		</p>
 	</div>
 </div>
 
@@ -621,6 +716,7 @@
 
 		:global(body) {
 			background: white !important;
+			font-size: 11px !important;
 		}
 
 		.no-print {
@@ -628,8 +724,19 @@
 		}
 
 		.print-container {
-			padding: 0 !important;
+			padding: 12px !important;
 			color: black !important;
+		}
+
+		/* Evitar cortes de página dentro de grupos */
+		.space-y-6 > div {
+			break-inside: avoid;
+		}
+
+		/* Forzar colores en impresión */
+		* {
+			-webkit-print-color-adjust: exact !important;
+			print-color-adjust: exact !important;
 		}
 	}
 </style>
