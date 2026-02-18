@@ -37,17 +37,31 @@
 	let listaCompras: ItemCompra[] = [];
 	let costoTotalCompra = 0;
 
+	// Estado: Checks de compra (Set de IDs de ingredientes)
+	let checkedItems = new Set<string>();
+
 	// Persistencia: Cargar
 	let loaded = false;
 	onMount(() => {
-		const guardado = localStorage.getItem('mrp_plan');
-		if (guardado) {
+		const planGuardado = localStorage.getItem('mrp_plan');
+		const checksGuardado = localStorage.getItem('mrp_checks');
+
+		if (planGuardado) {
 			try {
-				seleccion = JSON.parse(guardado);
+				seleccion = JSON.parse(planGuardado);
 			} catch (e) {
 				console.error('Error cargando plan', e);
 			}
 		}
+
+		if (checksGuardado) {
+			try {
+				checkedItems = new Set(JSON.parse(checksGuardado));
+			} catch (e) {
+				console.error('Error cargando checks', e);
+			}
+		}
+
 		loaded = true;
 	});
 
@@ -55,6 +69,7 @@
 	$: {
 		if (loaded && typeof localStorage !== 'undefined') {
 			localStorage.setItem('mrp_plan', JSON.stringify(seleccion));
+			localStorage.setItem('mrp_checks', JSON.stringify([...checkedItems]));
 		}
 
 		// 1. Consolidar demanda
@@ -88,8 +103,9 @@
 				// C. Unidades de Empaque (ej: necesito 2500g, viene en 1000g → 2.5 unidades)
 				const unidadesCompra = cantidadCompra / ing.cantidad_por_precio;
 
-				// Mantener estado checked si ya existía
-				const prevItem = listaCompras.find((old) => old.ingrediente.id === ingId);
+				// Mantener estado checked si ya existía (o si viene del Set cargado)
+				// El Set es la fuente de verdad
+				// const prevItem = listaCompras.find((old) => old.ingrediente.id === ingId);
 
 				nuevaLista.push({
 					ingrediente: ing,
@@ -97,7 +113,7 @@
 					cantidadCompra: cantidadCompra,
 					unidadesCompra: unidadesCompra,
 					costoEstimado: costo,
-					checked: prevItem ? prevItem.checked : false
+					checked: checkedItems.has(ingId)
 				});
 
 				costoTotalCompra += costo;
@@ -169,9 +185,17 @@
 	}
 
 	function toggleCheck(ingId: string) {
+		if (checkedItems.has(ingId)) {
+			checkedItems.delete(ingId);
+		} else {
+			checkedItems.add(ingId);
+		}
+		checkedItems = new Set(checkedItems); // Trigger reactividad para localStorage
+
+		// Actualizar visualmente la lista sin recalcular todo (optimización)
 		const item = listaCompras.find((i) => i.ingrediente.id === ingId);
 		if (item) {
-			item.checked = !item.checked;
+			item.checked = checkedItems.has(ingId);
 			listaCompras = [...listaCompras];
 		}
 	}
@@ -179,6 +203,7 @@
 	function limpiarPlan() {
 		if (confirm('¿Borrar todo el plan de producción?')) {
 			seleccion = [];
+			checkedItems = new Set();
 		}
 	}
 
