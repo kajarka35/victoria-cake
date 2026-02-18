@@ -9,6 +9,18 @@ export interface Ingrediente {
     cantidad_por_precio: number;
     proveedor?: string;
     categoria: string;
+
+    // --- Smart Metrics (Feb 2026) ---
+    peso_referencia_g?: number;     // Peso de 1 unidad (ej: 50g x huevo)
+    volumen_referencia_ml?: number; // Volumen de 1 unidad o densidad
+    factor_merma?: number;         // 0.0 a 1.0 (aprovechamiento)
+}
+
+export interface CategoriaIngrediente {
+    id: string;
+    nombre: string;
+    color: string;
+    icono: string;
 }
 
 export interface Receta {
@@ -23,6 +35,7 @@ export interface Receta {
     tiempo_coccion_min?: number;
     temperatura_coccion_c?: number;
     instrucciones?: string;
+    instrucciones_tipo?: 'pasos' | 'markdown';
     categoria?: string;
     tipo?: 'FINAL' | 'COMPONENTE' | 'BASE';
 
@@ -33,6 +46,11 @@ export interface Receta {
     tiempo_horneado?: string; // Ej: "45 min"
     producto_id?: string; // ID del producto final en catálogo (opcional)
     notas?: string; // Notas adicionales del chef
+
+    // --- Campos de Flujos Dinámicos (Feb 2026) ---
+    peso_lote_g?: number;       // Flujo Mezcla/Lote (Ganaches, Salsas)
+    unidades_producidas?: number; // Flujo Unitario (Cupcakes, Galletas)
+    tamano_venta?: string;      // Flujo Producto Final (Tamaño comercial)
 
     // --- Campos Financieros Amarena ---
     porcentaje_cif?: number; // Costos Indirectos de Fabricación (Default: 20%)
@@ -73,37 +91,68 @@ export function calcularPrecioVenta(costoReal: number, utilidad: number, empaque
 }
 
 /**
+ * Motor de Conversión Inteligente (Smart Metrics)
+ * Convierte cualquier cantidad y unidad a Gramos netos aprovechables.
+ */
+export function convertirAGramos(cantidad: number, unidad: string, ingrediente?: Ingrediente): number {
+    if (!ingrediente) return cantidad; // Fallback 1:1
+
+    const pesoRef = ingrediente.peso_referencia_g || 0;
+    const factorMerma = ingrediente.factor_merma || 1;
+
+    let gramosBrutos = 0;
+
+    switch (unidad.toLowerCase()) {
+        case 'g':
+        case 'gr':
+        case 'gramos':
+            gramosBrutos = cantidad;
+            break;
+        case 'kg':
+        case 'kilogramos':
+            gramosBrutos = cantidad * 1000;
+            break;
+        case 'ml':
+        case 'mililitros':
+        case 'cc':
+            // Asumimos 1:1 por defecto para líquidos
+            gramosBrutos = cantidad;
+            break;
+        case 'unidad':
+        case 'und':
+        case 'u':
+            if (pesoRef > 0) {
+                gramosBrutos = cantidad * pesoRef;
+            } else {
+                if (ingrediente.nombre.toLowerCase().includes('huevo')) {
+                    gramosBrutos = cantidad * 50;
+                } else {
+                    gramosBrutos = 0;
+                }
+            }
+            break;
+        case 'lb':
+        case 'libra':
+            gramosBrutos = cantidad * 500;
+            break;
+        default:
+            gramosBrutos = cantidad;
+    }
+
+    return gramosBrutos * factorMerma;
+}
+
+/**
  * Calcula el peso total de la receta sumando sus ingredientes (recursivo).
  * Esto es CRÍTICO para la "Masa Total Necesaria" de Amarena.
  */
 export function calcularPesoReceta(receta: Receta): number {
     if (!receta.composicion || receta.composicion.length === 0) {
-        // Fallback si no hay composición detallada pero hay un rendimiento manual
         return receta.rendimiento_base_g || 0;
     }
 
     return receta.composicion.reduce((total, item) => {
-        let pesoItem = 0;
-
-        // Si es gramos o mililitros, asumimos 1:1 para simplificar (común en pastelería salvo aceites)
-        // Si es unidad, necesitamos saber cuánto pesa la unidad. Por ahora, si es unidad y no tenemos peso, alertar o usar 0.
-        // MEJORA: En el futuro, usar campo 'peso_unidad' del ingrediente.
-        if (item.unidad === 'unidad') {
-            // Hotfix (Feb 2026): Los huevos pesan aprox 50g-55g clase AA.
-            // Si el ingrediente es "Huevos" (o similar), sumamos peso.
-            const nombre = (item.ingrediente?.nombre || "").toLowerCase();
-            if (nombre.includes('huevo')) {
-                pesoItem = (item.cantidad || 0) * 50; // 50g por huevo
-            } else {
-                // Otros items por unidad (ej: cajas) no suman "peso comestible"
-                pesoItem = 0;
-            }
-        } else {
-            pesoItem = item.cantidad || 0;
-        }
-
-        // Si es sub-receta, el peso es la cantidad que se usa de esa sub-receta (ya está en gramos en la composición)
-        // No necesitamos recursividad profunda para el peso *usado*, solo sumar la cantidad listada.
+        const pesoItem = convertirAGramos(item.cantidad, item.unidad, item.ingrediente);
         return total + pesoItem;
     }, 0);
 }
@@ -120,28 +169,16 @@ export function calcularPesoMasaAmarena(receta: Receta): number {
     return receta.composicion.reduce((total, item) => {
         let pesoItem = 0;
 
-        // 1. Ingredientes (Materia Prima): SIEMPRE SUMAN (Harina, Huevos, etc. son parte de la masa)
+        // 1. Ingredientes (Materia Prima): SIEMPRE SUMAN
         if (item.ingrediente || item.child_ingredient_id) {
-            // Lógica idéntica a calcularPesoReceta para Huevos
-            if (item.unidad === 'unidad') {
-                const nombre = (item.ingrediente?.nombre || "").toLowerCase();
-                if (nombre.includes('huevo')) {
-                    pesoItem = (item.cantidad || 0) * 50;
-                } else {
-                    pesoItem = 0;
-                }
-            } else {
-                pesoItem = item.cantidad || 0;
-            }
+            pesoItem = convertirAGramos(item.cantidad, item.unidad, item.ingrediente);
         }
         // 2. Sub-Recetas: FILTRAR
         else if (item.sub_receta || item.child_recipe_id) {
             const cat = (item.sub_receta?.categoria || "").toLowerCase();
-            // LISTA NEGRA: Rellenos, Coberturas, Decoración, Salsas
             if (['rellenos', 'coberturas', 'decoracion', 'salsas', 'ganache'].some(c => cat.includes(c))) {
-                return total; // No suma al Peso Masa
+                return total;
             }
-            // Si es 'bases', 'tortas', etc., SUMA.
             pesoItem = item.cantidad || 0;
         }
 
@@ -162,6 +199,14 @@ export function calcularPorcionesEstandar(pesoTotalG: number): number {
 export function calcularCostoPorGramo(costoReal: number, pesoTotalG: number): number {
     if (!pesoTotalG || pesoTotalG === 0) return 0;
     return costoReal / pesoTotalG;
+}
+
+/**
+ * Calcula el Costo Unitario (para Flujo Unitario - Cupcakes/Galletas)
+ */
+export function calcularCostoUnitario(costoReal: number, unidades: number): number {
+    if (!unidades || unidades === 0) return 0;
+    return costoReal / unidades;
 }
 
 /**
@@ -247,11 +292,22 @@ export interface RecetaIngredienteDetalle extends RecetaIngrediente {
  */
 export function calcularCostoIngrediente(
     cantidadNecesaria: number,
-    precioPresentacion: number,
-    cantidadPresentacion: number
+    unidadNecesaria: string,
+    ingrediente: Ingrediente
 ): number {
-    if (cantidadPresentacion === 0) return 0;
-    return (cantidadNecesaria * precioPresentacion) / cantidadPresentacion;
+    const { precio, cantidad_por_precio, unidad: unidadCompra, factor_merma = 1 } = ingrediente;
+
+    if (cantidad_por_precio === 0) return 0;
+
+    const gramosNecesarios = convertirAGramos(cantidadNecesaria, unidadNecesaria, ingrediente);
+    const gramosEnCompra = convertirAGramos(cantidad_por_precio, unidadCompra, ingrediente);
+
+    if (gramosEnCompra === 0) return 0;
+
+    const costoPorGramoBruto = precio / gramosEnCompra;
+    const gramosA_Pagar = gramosNecesarios / (factor_merma || 1);
+
+    return gramosA_Pagar * costoPorGramoBruto;
 }
 
 /**
@@ -259,39 +315,31 @@ export function calcularCostoIngrediente(
  * Soporta V1 (lista plana) y V2 (grafo).
  */
 export function calcularCostoReceta(receta: Receta): number {
-    // 1. Fallback a V1 si no hay composición V2 pero sí ingredientes legacy
     if ((!receta.composicion || receta.composicion.length === 0) && receta.ingredientes) {
         return receta.ingredientes.reduce((total, item) => {
             return total + calcularCostoIngrediente(
                 item.cantidad,
-                item.ingrediente.precio,
-                item.ingrediente.cantidad_por_precio
+                'g', // Legacy assumption
+                item.ingrediente
             );
         }, 0);
     }
 
-    // 2. Cálculo V2 Recursivo
     if (!receta.composicion) return 0;
 
     return receta.composicion.reduce((total, item) => {
         let costoItem = 0;
 
         if (item.ingrediente) {
-            // Es Materia Prima
             costoItem = calcularCostoIngrediente(
                 item.cantidad,
-                item.ingrediente.precio,
-                item.ingrediente.cantidad_por_precio
+                item.unidad,
+                item.ingrediente
             );
         } else if (item.sub_receta) {
-            // Es Sub-Receta (Recursión)
             const costoTotalSub = calcularCostoReceta(item.sub_receta);
-            const rendimientoSub = item.sub_receta.rendimiento_base_g || 1000; // Default 1kg if missing
-
-            // Costo por gramo de la sub-receta
+            const rendimientoSub = item.sub_receta.rendimiento_base_g || 1;
             const costoPorGramo = costoTotalSub / rendimientoSub;
-
-            // Costo de la cantidad usada
             costoItem = item.cantidad * costoPorGramo;
         }
 
@@ -310,6 +358,47 @@ export function escalarCantidad(
     if (porcionesBase === 0) return 0;
     const factor = porcionesDeseadas / porcionesBase;
     return Math.round(cantidadBase * factor * 100) / 100;
+}
+
+import { marked } from 'marked';
+
+/**
+ * Parsea el string Markdown de instrucciones guardado por el Wizard 
+ * y lo convierte en un array de objetos para renderizado premium.
+ * Ahora es inteligente: divide por secciones (headers) o bloques de texto.
+ */
+export function parseInstruccionesMD(md: string): { text: string; isTip: boolean }[] {
+    if (!md) return [];
+
+    // Dividimos por secciones basadas en encabezados (#) o dobles saltos de línea
+    // El lookahead (?=\n#) permite separar por encabezados sin borrarlos
+    const regexSeparador = /\n\n+|(?=\n#{1,3}\s)/;
+
+    return md
+        .split(regexSeparador)
+        .map((part) => part.trim())
+        .filter((part) => part.length > 0)
+        .map((part) => {
+            // Limpiar numeración redundante al inicio si existe (ej: "1. 1. Paso")
+            // Esto evita que el renderizado de la card choque con el Markdown
+            let cleanLine = part.replace(/^\d+\.\s*/, '');
+
+            const isTip = cleanLine.includes('> **Tip:**');
+            if (isTip) {
+                cleanLine = cleanLine.replace('> **Tip:**', '').trim();
+            }
+
+            return { text: cleanLine, isTip };
+        });
+}
+
+/**
+ * Renderiza Markdown de forma segura y consistente usando 'marked'.
+ */
+export function renderMarkdown(content: string): string {
+    if (!content) return '';
+    // Configuramos marked para que sea simple y limpio (Gfm enabled by default)
+    return marked.parse(content, { gfm: true, breaks: true }) as string;
 }
 
 /**

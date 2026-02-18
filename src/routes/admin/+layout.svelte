@@ -95,6 +95,12 @@
 				📝 Gestor CMS
 			</a>
 			<a
+				href="/admin/configuracion"
+				class="flex items-center gap-3 rounded-2xl px-4 py-2 text-base font-medium text-gray-800 transition-all duration-300 hover:scale-[1.02] hover:bg-pink-100 active:scale-95 dark:text-gray-200 dark:hover:bg-pink-900/30"
+			>
+				⚙️ Configuración
+			</a>
+			<a
 				href="/admin/agregar"
 				class="flex items-center gap-3 rounded-2xl px-4 py-2 text-base font-medium text-gray-800 transition-all duration-300 hover:scale-[1.02] hover:bg-pink-100 active:scale-95 dark:text-gray-200 dark:hover:bg-pink-900/30"
 			>

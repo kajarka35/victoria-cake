@@ -1,18 +1,94 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabaseClient';
 	import IngredienteRow from '$lib/components/IngredienteRow.svelte';
-	import type { Ingrediente } from '$lib/kitchen';
+	import CategoryCreator from '$lib/components/CategoryCreator.svelte';
+	import CategoryManager from '$lib/components/CategoryManager.svelte';
+	import type { Ingrediente, CategoriaIngrediente } from '$lib/kitchen';
+
+	interface IngredienteConUso extends Ingrediente {
+		uso_count: number;
+	}
 
 	export let data;
-	let ingredientes: Ingrediente[] = data.ingredientes;
-	let nuevoIngrediente: Partial<Ingrediente> | null = null;
+	let ingredientes: IngredienteConUso[] = data.ingredientes as unknown as IngredienteConUso[];
+	let categorias: CategoriaIngrediente[] = data.categorias as unknown as CategoriaIngrediente[];
+
+	let nuevoIngrediente: Partial<IngredienteConUso> | null = null;
 	let filtroCategoria = 'todas';
 	let busqueda = '';
+
+	// State for Modals
+	let mostrarCreador = false;
+	let mostrarManager = false;
+
+	// Sorting
+	let sortCol = 'nombre';
+	let sortAsc = true;
+
+	function ordenar(col: string) {
+		if (sortCol === col) {
+			sortAsc = !sortAsc;
+		} else {
+			sortCol = col;
+			sortAsc = true;
+		}
+	}
+
+	function exportarExcel() {
+		const csvContent = [
+			['Nombre', 'Categoría', 'Precio', 'Unidad', 'Uso en Recetas'],
+			...ingredientes.map((i) => [i.nombre, i.categoria, i.precio, i.unidad, i.uso_count || 0])
+		]
+			.map((e) => e.join(','))
+			.join('\n');
+
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+		link.setAttribute('href', url);
+		link.setAttribute('download', 'ingredientes_victoria_cake.csv');
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
+
+	function abrirCreadorCategoria() {
+		mostrarCreador = true;
+	}
+
+	async function recargarCategorias() {
+		const { data: newCats } = await supabase
+			.from('categorias_ingredientes')
+			.select('*')
+			.order('nombre');
+
+		if (newCats) {
+			categorias = newCats;
+		}
+	}
+
+	async function guardarNuevaCategoria(event: CustomEvent) {
+		const nuevaCat = event.detail; // { nombre, color, icono }
+
+		const { data: inserted, error } = await supabase
+			.from('categorias_ingredientes')
+			.insert([nuevaCat])
+			.select()
+			.single();
+
+		if (error) {
+			alert('Error al crear categoría: ' + error.message);
+		} else {
+			// Update local list
+			categorias = [...categorias, inserted].sort((a, b) => a.nombre.localeCompare(b.nombre));
+			mostrarCreador = false;
+		}
+	}
 
 	async function crearIngrediente(event: CustomEvent) {
 		const datos = event.detail;
 		/* eslint-disable @typescript-eslint/no-unused-vars */
-		const { id, ...payload } = datos; // remove temporary ID if exists
+		const { id, uso_count, ...payload } = datos;
 
 		const { data: insertData, error } = await supabase
 			.from('ingredientes')
@@ -23,16 +99,19 @@
 		if (error) {
 			alert('Error al crear: ' + error.message);
 		} else {
-			ingredientes = [insertData, ...ingredientes];
+			ingredientes = [{ ...insertData, uso_count: 0 }, ...ingredientes];
 			nuevoIngrediente = null;
 		}
 	}
 
 	async function actualizarIngrediente(event: CustomEvent) {
 		const datos = event.detail;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { uso_count, ...payload } = datos;
+
 		const { data: updateData, error } = await supabase
 			.from('ingredientes')
-			.update(datos)
+			.update(payload)
 			.eq('id', datos.id)
 			.select()
 			.single();
@@ -40,7 +119,9 @@
 		if (error) {
 			alert('Error al actualizar: ' + error.message);
 		} else {
-			ingredientes = ingredientes.map((i) => (i.id === datos.id ? updateData : i));
+			ingredientes = ingredientes.map((i) =>
+				i.id === datos.id ? { ...updateData, uso_count: i.uso_count } : i
+			);
 		}
 	}
 
@@ -63,20 +144,46 @@
 			unidad: 'g',
 			precio: 0,
 			cantidad_por_precio: 1000,
-			categoria: 'general'
+			categoria: 'general',
+			uso_count: 0
 		};
 	}
 
-	$: ingredientesFiltrados = ingredientes.filter((i) => {
-		const matchCat = filtroCategoria === 'todas' || i.categoria === filtroCategoria;
-		const matchSearch = i.nombre.toLowerCase().includes(busqueda.toLowerCase());
-		return matchCat && matchSearch;
-	});
+	$: ingredientesFiltrados = ingredientes
+		.filter((i) => {
+			const matchCat = filtroCategoria === 'todas' || i.categoria === filtroCategoria;
+			const matchSearch = i.nombre.toLowerCase().includes(busqueda.toLowerCase());
+			return matchCat && matchSearch;
+		})
+		.sort((a, b) => {
+			let valA: any = a[sortCol as keyof IngredienteConUso] ?? '';
+			let valB: any = b[sortCol as keyof IngredienteConUso] ?? '';
+
+			if (typeof valA === 'string') valA = valA.toLowerCase();
+			if (typeof valB === 'string') valB = valB.toLowerCase();
+
+			if (valA < valB) return sortAsc ? -1 : 1;
+			if (valA > valB) return sortAsc ? 1 : -1;
+			return 0;
+		});
 </script>
 
 <svelte:head>
 	<title>Gestión de Insumos | Olga's Smart Kitchen</title>
 </svelte:head>
+
+<CategoryCreator
+	bind:mostrar={mostrarCreador}
+	on:guardar={guardarNuevaCategoria}
+	on:cancelar={() => (mostrarCreador = false)}
+/>
+
+<CategoryManager
+	bind:mostrar={mostrarManager}
+	{categorias}
+	on:actualizar={recargarCategorias}
+	on:cerrar={() => (mostrarManager = false)}
+/>
 
 <div class="space-y-6">
 	<div class="flex flex-col items-center justify-between gap-4 md:flex-row">
@@ -88,12 +195,20 @@
 				Administra los precios y presentaciones de tus ingredientes.
 			</p>
 		</div>
-		<button
-			on:click={iniciarCreacion}
-			class="transform rounded-full bg-pink-500 px-4 py-2 text-white shadow-lg transition hover:scale-105 hover:bg-pink-600"
-		>
-			+ Nuevo Ingrediente
-		</button>
+		<div class="flex gap-3">
+			<button
+				on:click={exportarExcel}
+				class="flex transform items-center gap-2 rounded-full bg-green-500 px-4 py-2 text-white shadow-lg transition hover:scale-105 hover:bg-green-600"
+			>
+				📥 Exportar
+			</button>
+			<button
+				on:click={iniciarCreacion}
+				class="transform rounded-full bg-pink-500 px-4 py-2 text-white shadow-lg transition hover:scale-105 hover:bg-pink-600"
+			>
+				+ Nuevo Ingrediente
+			</button>
+		</div>
 	</div>
 
 	<!-- Filtros -->
@@ -106,61 +221,116 @@
 			placeholder="🔍 Buscar ingrediente..."
 			class="flex-1 rounded-xl border-pink-200 bg-white px-4 py-2 focus:border-pink-500 focus:ring-pink-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
 		/>
-		<select
-			bind:value={filtroCategoria}
-			class="rounded-xl border-pink-200 bg-white px-4 py-2 focus:border-pink-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-		>
-			<option value="todas">Todas las categorías</option>
-			<option value="harinas">Harinas</option>
-			<option value="lacteos">Lácteos</option>
-			<option value="grasas">Grasas</option>
-			<option value="endulzantes">Endulzantes</option>
-			<option value="esencias">Esencias</option>
-			<option value="chocolates">Chocolates</option>
-			<option value="frutas">Frutas</option>
-			<option value="empaques">Empaques</option>
-		</select>
+		<div class="flex w-full gap-2 md:w-auto">
+			<select
+				bind:value={filtroCategoria}
+				class="flex-1 rounded-xl border-pink-200 bg-white px-4 py-2 focus:border-pink-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+			>
+				<option value="todas">Todas las categorías</option>
+				{#each categorias as cat}
+					<option value={cat.nombre}>{cat.icono} {cat.nombre}</option>
+				{/each}
+			</select>
+			<button
+				on:click={() => (mostrarManager = true)}
+				class="rounded-xl border border-gray-200 bg-white p-2 text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+				title="Administrar Categorías"
+			>
+				⚙️
+			</button>
+		</div>
 	</div>
 
+	<!-- Tabla Premium -->
 	<div
-		class="overflow-x-auto rounded-2xl border border-pink-100 bg-white/80 shadow-xl backdrop-blur-md dark:border-gray-700 dark:bg-gray-800/80"
+		class="overflow-hidden rounded-3xl border border-white/40 bg-white/30 shadow-2xl backdrop-blur-xl dark:border-gray-700 dark:bg-gray-900/40"
 	>
-		<table class="w-full text-left">
-			<thead class="bg-pink-50 text-pink-700 dark:bg-gray-700/50 dark:text-pink-300">
-				<tr>
-					<th class="rounded-tl-2xl p-4">Nombre</th>
-					<th class="p-4">Categoría</th>
-					<th class="p-4">Precio</th>
-					<th class="p-4">Presentación</th>
-					<th class="rounded-tr-2xl p-4 text-right">Acciones</th>
-				</tr>
-			</thead>
-			<tbody class="divide-y divide-pink-100 dark:divide-gray-700">
-				{#if nuevoIngrediente}
-					<IngredienteRow
-						ingrediente={nuevoIngrediente}
-						esNuevo={true}
-						on:guardar={crearIngrediente}
-						on:cancelar={() => (nuevoIngrediente = null)}
-					/>
-				{/if}
-
-				{#each ingredientesFiltrados as img (img.id)}
-					<IngredienteRow
-						ingrediente={img}
-						on:guardar={actualizarIngrediente}
-						on:eliminar={eliminarIngrediente}
-					/>
-				{:else}
-					{#if !nuevoIngrediente}
-						<tr>
-							<td colspan="5" class="p-8 text-center text-gray-500">
-								No se encontraron ingredientes. ¡Crea uno nuevo!
-							</td>
-						</tr>
+		<div class="overflow-x-auto">
+			<table class="w-full border-collapse text-left">
+				<thead
+					class="hidden bg-gradient-to-r from-pink-500/10 to-purple-500/10 md:table-header-group dark:from-pink-900/20 dark:to-purple-900/20"
+				>
+					<tr>
+						<th
+							class="cursor-pointer p-5 text-xs font-bold tracking-wider text-pink-600 uppercase hover:text-pink-800 dark:text-pink-400"
+							on:click={() => ordenar('nombre')}
+						>
+							Nombre {sortCol === 'nombre' ? (sortAsc ? '▲' : '▼') : ''}
+						</th>
+						<th
+							class="cursor-pointer p-5 text-xs font-bold tracking-wider text-pink-600 uppercase hover:text-pink-800 dark:text-pink-400"
+							on:click={() => ordenar('categoria')}
+						>
+							Categoría {sortCol === 'categoria' ? (sortAsc ? '▲' : '▼') : ''}
+						</th>
+						<th
+							class="cursor-pointer p-5 text-xs font-bold tracking-wider text-pink-600 uppercase hover:text-pink-800 dark:text-pink-400"
+							on:click={() => ordenar('precio')}
+						>
+							Precio {sortCol === 'precio' ? (sortAsc ? '▲' : '▼') : ''}
+						</th>
+						<th
+							class="cursor-pointer p-5 text-xs font-bold tracking-wider text-pink-600 uppercase hover:text-pink-800 dark:text-pink-400"
+							on:click={() => ordenar('unidad')}
+						>
+							Presentación {sortCol === 'unidad' ? (sortAsc ? '▲' : '▼') : ''}
+						</th>
+						<th
+							class="cursor-pointer p-5 text-xs font-bold tracking-wider text-pink-600 uppercase hover:text-pink-800 dark:text-pink-400"
+							on:click={() => ordenar('uso_count')}
+						>
+							Impacto {sortCol === 'uso_count' ? (sortAsc ? '▲' : '▼') : ''}
+						</th>
+						<th
+							class="p-5 text-right text-xs font-bold tracking-wider text-pink-600 uppercase dark:text-pink-400"
+							>Acciones</th
+						>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-pink-50/50 dark:divide-gray-800/50">
+					{#if nuevoIngrediente}
+						<IngredienteRow
+							ingrediente={nuevoIngrediente as Ingrediente}
+							esNuevo={true}
+							uso={0}
+							{categorias}
+							on:guardar={crearIngrediente}
+							on:cancelar={() => (nuevoIngrediente = null)}
+							on:crearCategoria={abrirCreadorCategoria}
+						/>
 					{/if}
-				{/each}
-			</tbody>
-		</table>
+
+					{#each ingredientesFiltrados as img (img.id)}
+						<IngredienteRow
+							ingrediente={img}
+							uso={img.uso_count}
+							{categorias}
+							on:guardar={actualizarIngrediente}
+							on:eliminar={eliminarIngrediente}
+							on:crearCategoria={abrirCreadorCategoria}
+						/>
+					{:else}
+						{#if !nuevoIngrediente}
+							<tr>
+								<td colspan="5" class="py-20 text-center">
+									<div class="flex flex-col items-center gap-3">
+										<span class="text-6xl">🍲</span>
+										<p class="text-xl font-medium text-gray-500 dark:text-gray-400">
+											No se encontraron ingredientes
+										</p>
+										<button
+											on:click={iniciarCreacion}
+											class="mt-2 text-sm font-bold text-pink-500 hover:text-pink-700"
+										>
+											Crear el primero ahora
+										</button>
+									</div>
+								</td>
+							</tr>
+						{/if}
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>

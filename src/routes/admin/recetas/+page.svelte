@@ -1,26 +1,34 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import RecetaCard from '$lib/components/RecetaCard.svelte';
+	import RecipeWizard from '$lib/components/RecipeWizard.svelte';
 	import { supabase } from '$lib/supabaseClient';
 
 	export let data;
-	let recetas = data.recetas;
+	$: recetas = data.recetas;
+	$: todosIngredientes = data.todosIngredientes;
+	$: todasRecetas = data.todasRecetas;
 
-	async function crearReceta() {
-		const nombre = prompt('Nombre de la nueva receta:');
-		if (!nombre) return;
+	let mostrarWizard = false;
 
-		const { data: nueva, error } = await supabase
-			.from('recetas')
-			.insert([{ nombre, categoria: 'tortas', porciones_base: 8 }])
-			.select()
-			.single();
+	function handleRecetaCreada(event: CustomEvent) {
+		const nueva = event.detail;
+		mostrarWizard = false;
+		goto(`/admin/recetas/${nueva.id}`);
+	}
+
+	async function handleEliminarReceta(event: CustomEvent) {
+		const id = event.detail;
+		const { error } = await supabase.from('recetas').delete().eq('id', id);
 
 		if (error) {
-			alert('Error: ' + error.message);
-		} else {
-			goto(`/admin/recetas/${nueva.id}`);
+			console.error('Error eliminando receta:', error);
+			alert('No se pudo eliminar la receta. Verifica si está siendo usada en producciones.');
+			return;
 		}
+
+		// Actualizar UI localmente
+		data.recetas = data.recetas.filter((r: any) => r.id !== id);
 	}
 </script>
 
@@ -41,7 +49,7 @@
 			</p>
 		</div>
 		<button
-			on:click={crearReceta}
+			on:click={() => (mostrarWizard = true)}
 			class="flex transform items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 px-6 py-3 font-bold text-white shadow-lg transition hover:scale-105 hover:from-pink-600 hover:to-purple-700"
 		>
 			<span>✨ Crear Nueva Receta</span>
@@ -50,16 +58,25 @@
 
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 		{#each recetas as receta (receta.id)}
-			<RecetaCard {receta} costoTotal={receta.costoTotal} />
+			<RecetaCard {receta} costoTotal={receta.costoTotal} on:eliminar={handleEliminarReceta} />
 		{/each}
 
 		<!-- Card para agregar visualmente -->
 		<button
-			on:click={crearReceta}
+			on:click={() => (mostrarWizard = true)}
 			class="flex h-64 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-pink-200 bg-pink-50/10 transition hover:border-pink-400 hover:bg-pink-50/50 dark:border-gray-700 dark:hover:bg-gray-800/50"
 		>
 			<span class="mb-2 text-4xl">➕</span>
 			<span class="font-medium text-pink-500">Agregar Receta</span>
 		</button>
 	</div>
+
+	{#if mostrarWizard}
+		<RecipeWizard
+			{todosIngredientes}
+			{todasRecetas}
+			on:cerrar={() => (mostrarWizard = false)}
+			on:creada={handleRecetaCreada}
+		/>
+	{/if}
 </div>

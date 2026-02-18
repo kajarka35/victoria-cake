@@ -26,9 +26,14 @@ export async function load() {
         `)
         .order('nombre');
 
+    const { data: ingredientes, error: errorIng } = await supabase
+        .from('ingredientes')
+        .select('*')
+        .order('nombre');
+
     if (error) {
         console.error("Error cargando recetas:", error);
-        return { recetas: [] };
+        return { recetas: [], todosIngredientes: [], todasRecetas: [] };
     }
 
     // Calcular costo pre-renderizado para mostrar en cards
@@ -37,5 +42,9 @@ export async function load() {
         costoTotal: calcularCostoReceta(r as unknown as Receta)
     }));
 
-    return { recetas: recetasConCosto };
+    return {
+        recetas: recetasConCosto,
+        todosIngredientes: ingredientes || [],
+        todasRecetas: recetasConCosto
+    };
 }
