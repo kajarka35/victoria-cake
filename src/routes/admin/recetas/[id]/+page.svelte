@@ -1058,11 +1058,40 @@
 
 						<!-- Output Link -->
 						<a
-							href="/admin/recetas/{receta.id}/produccion"
-							class="flex w-full items-center justify-center gap-3 rounded-2xl bg-gray-900 py-5 text-xs font-black text-white shadow-xl transition-all hover:scale-105 active:scale-95 dark:bg-white dark:text-gray-900"
+							href="/admin/recetas/{receta.id}/produccion?pax={porcionesActuales}&molde={moldeObjetivoCm}&tipo={tipoBatido}"
+							class="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 via-indigo-900 to-gray-900 py-5 text-xs font-black text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-indigo-500/20 active:scale-[0.97] dark:from-white dark:via-indigo-50 dark:to-white dark:text-gray-900"
 						>
-							<span>👨‍🍳</span>
-							<span class="tracking-widest uppercase">Mode Cocina Master</span>
+							<!-- Shine sweep overlay -->
+							<div
+								class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+							>
+								<div class="shine-sweep absolute inset-0"></div>
+							</div>
+							<div class="relative flex items-center gap-3">
+								<span
+									class="text-lg transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12"
+									>�</span
+								>
+								<span class="text-xs font-black tracking-[0.2em] uppercase">Iniciar Producción</span
+								>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+										clip-rule="evenodd"
+									/>
+								</svg>
+							</div>
+							<span
+								class="text-[9px] font-medium tracking-wide text-gray-400 uppercase dark:text-gray-500"
+							>
+								{porcionesActuales.toFixed(0)} porciones · Molde {moldeObjetivoCm}cm
+							</span>
 						</a>
 					</div>
 				</div>
@@ -1083,6 +1112,23 @@
 {/if}
 
 <style>
+	@keyframes shine-sweep-anim {
+		0% {
+			transform: translateX(-100%);
+		}
+		100% {
+			transform: translateX(100%);
+		}
+	}
+	.shine-sweep {
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgba(255, 255, 255, 0.15) 50%,
+			transparent 100%
+		);
+		animation: shine-sweep-anim 1.5s ease-in-out infinite;
+	}
 	.custom-scrollbar::-webkit-scrollbar {
 		width: 6px;
 	}
