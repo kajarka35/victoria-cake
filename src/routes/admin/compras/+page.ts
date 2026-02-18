@@ -9,16 +9,19 @@ export async function load() {
     const [
         { data: allRecetas, error: errR },
         { data: allComposicion, error: errC },
-        { data: allIngredientes, error: errI }
+        { data: allIngredientes, error: errI },
+        { data: allHistorial, error: errH }
     ] = await Promise.all([
         supabase.from('recetas').select('*').order('nombre'),
         supabase.from('recipe_composition').select('*'),
-        supabase.from('ingredientes').select('*')
+        supabase.from('ingredientes').select('*'),
+        supabase.from('produccion_historial').select('receta_id, receta_nombre').order('created_at', { ascending: false }).limit(50)
     ]);
 
     if (errR) console.error(errR);
     if (errC) console.error(errC);
     if (errI) console.error(errI);
+    if (errH) console.error(errH);
 
     // Armar el grafo en cliente
     const mapIngredientes = new Map<string, Ingrediente>();
@@ -47,12 +50,29 @@ export async function load() {
         });
     }
 
+    // Calcular top 3 recetas
+    const conteo = new Map<string, number>();
+    if (allHistorial) {
+        allHistorial.forEach((h: any) => {
+            conteo.set(h.receta_id, (conteo.get(h.receta_id) || 0) + 1);
+        });
+    }
+    const topRecetasIds = [...conteo.entries()]
+        .sort((a, b) => b[1] - a[1]) // Descendente
+        .slice(0, 3)
+        .map(([id]) => id);
+
+    const topRecetas = topRecetasIds
+        .map(id => mapRecetas.get(id))
+        .filter(r => r !== undefined) as Receta[];
+
     // Convertir mapa a array para la UI
     const recetasCompletas = Array.from(mapRecetas.values());
 
     return {
         recetas: recetasCompletas,
         mapRecetas: mapRecetas, // Pasamos el mapa para facilitar búsquedas recursivas
-        ingredientes: allIngredientes || []
+        ingredientes: allIngredientes || [],
+        topRecetas
     };
 }

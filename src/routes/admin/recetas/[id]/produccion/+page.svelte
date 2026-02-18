@@ -223,6 +223,7 @@
 	// === MEJORA 10: Historial de Producción ===
 	let guardando = false;
 	let guardadoExitoso = false;
+	let notas = '';
 
 	async function guardarProduccion() {
 		if (guardando) return;
@@ -239,7 +240,7 @@
 			costo_primo: Math.round(costoPrimo * 100) / 100,
 			costo_total: Math.round(costoTotal * 100) / 100,
 			precio_sugerido: Math.round(precioVentaSugerido * 100) / 100,
-			notas: null
+			notas: notas.trim() || null
 		});
 
 		guardando = false;
@@ -280,9 +281,11 @@
 				<img
 					src={qrUrl}
 					alt="QR escanea para abrir en celular"
-					class="h-14 w-14 rounded-lg border-2 border-gray-200 opacity-60 transition hover:opacity-100 hover:border-pink-400"
+					class="h-14 w-14 rounded-lg border-2 border-gray-200 opacity-60 transition hover:border-pink-400 hover:opacity-100"
 				/>
-				<span class="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-0.5 text-[9px] font-bold text-white opacity-0 transition group-hover:opacity-100">
+				<span
+					class="absolute -bottom-7 left-1/2 -translate-x-1/2 rounded bg-gray-900 px-2 py-0.5 text-[9px] font-bold whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100"
+				>
 					📱 Escanear en celular
 				</span>
 			</div>
@@ -342,14 +345,22 @@
 		<div
 			class="rounded-xl border-2 border-red-100 bg-red-50 p-4 print:rounded-none print:border-gray-400 print:bg-transparent print:p-2"
 		>
-			<span class="block text-[10px] font-bold text-red-400 uppercase print:text-gray-600">🌡️ Temperatura</span>
-			<span class="text-xl font-black text-red-600 print:text-black">{recetaBase.temperatura || '—'}</span>
+			<span class="block text-[10px] font-bold text-red-400 uppercase print:text-gray-600"
+				>🌡️ Temperatura</span
+			>
+			<span class="text-xl font-black text-red-600 print:text-black"
+				>{recetaBase.temperatura || '—'}</span
+			>
 		</div>
 		<div
 			class="rounded-xl border-2 border-amber-100 bg-amber-50 p-4 print:rounded-none print:border-gray-400 print:bg-transparent print:p-2"
 		>
-			<span class="block text-[10px] font-bold text-amber-500 uppercase print:text-gray-600">⏱️ Horneado</span>
-			<span class="text-xl font-black text-amber-700 print:text-black">{recetaBase.tiempo_horneado || '—'}</span>
+			<span class="block text-[10px] font-bold text-amber-500 uppercase print:text-gray-600"
+				>⏱️ Horneado</span
+			>
+			<span class="text-xl font-black text-amber-700 print:text-black"
+				>{recetaBase.tiempo_horneado || '—'}</span
+			>
 		</div>
 		<div
 			class="rounded-xl border border-gray-100 bg-gray-50 p-4 print:rounded-none print:border-gray-300 print:bg-transparent print:p-2"
@@ -362,7 +373,7 @@
 				type="text"
 				bind:value={responsable}
 				placeholder="Nombre del pastelero..."
-				class="mt-1 w-full border-b-2 border-gray-300 bg-transparent text-sm font-semibold text-gray-900 outline-none transition-colors placeholder:text-gray-300 focus:border-pink-500 print:border-gray-800"
+				class="mt-1 w-full border-b-2 border-gray-300 bg-transparent text-sm font-semibold text-gray-900 transition-colors outline-none placeholder:text-gray-300 focus:border-pink-500 print:border-gray-800"
 			/>
 		</div>
 	</section>
@@ -463,11 +474,7 @@
 		<div class="relative h-3 w-full overflow-hidden rounded-full bg-gray-200">
 			<div
 				class="absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out
-					{progresoPct >= 100
-					? 'bg-green-500'
-					: progresoPct > 50
-						? 'bg-indigo-500'
-						: 'bg-pink-500'}"
+					{progresoPct >= 100 ? 'bg-green-500' : progresoPct > 50 ? 'bg-indigo-500' : 'bg-pink-500'}"
 				style="width: {progresoPct}%"
 			></div>
 		</div>
@@ -480,21 +487,25 @@
 
 	<!-- Checklist Agrupada por Categoría -->
 	<div class="space-y-6 print:space-y-3">
-		<h2 class="mb-2 text-2xl font-bold tracking-wider text-gray-400 uppercase print:text-lg print:text-black">
+		<h2
+			class="mb-2 text-2xl font-bold tracking-wider text-gray-400 uppercase print:text-lg print:text-black"
+		>
 			Mise en Place
 		</h2>
 
 		{#each gruposCategoria as grupo}
-			<div class="overflow-hidden rounded-xl border border-gray-100 print:rounded-none print:border-gray-400">
+			<div
+				class="overflow-hidden rounded-xl border border-gray-100 print:rounded-none print:border-gray-400"
+			>
 				<!-- Header de Grupo -->
-				<div class="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-5 py-3 print:bg-gray-200 print:py-1 print:px-3">
+				<div
+					class="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-5 py-3 print:bg-gray-200 print:px-3 print:py-1"
+				>
 					<span class="text-lg print:text-sm">{catEmoji(grupo.nombre)}</span>
 					<h3 class="text-xs font-black tracking-[0.15em] text-gray-500 uppercase print:text-black">
 						{grupo.nombre}
 					</h3>
-					<span class="ml-auto text-xs font-medium text-gray-400"
-						>{grupo.items.length} items</span
-					>
+					<span class="ml-auto text-xs font-medium text-gray-400">{grupo.items.length} items</span>
 				</div>
 
 				<!-- Items del grupo -->
@@ -505,7 +516,7 @@
 							<div
 								role="button"
 								tabindex="0"
-								class="group flex cursor-pointer items-center justify-between px-5 py-4 transition-colors hover:bg-yellow-50 print:py-2 print:px-3"
+								class="group flex cursor-pointer items-center justify-between px-5 py-4 transition-colors hover:bg-yellow-50 print:px-3 print:py-2"
 								on:click={() => toggleCheck(item.id)}
 								on:keydown={(e) => handleKeydown(e, item.id)}
 							>
@@ -525,20 +536,14 @@
 											stroke="currentColor"
 											stroke-width="4"
 										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												d="M5 13l4 4L19 7"
-											/>
+											<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
 										</svg>
 									</div>
 
 									<div class="flex flex-col">
 										<span
 											class="text-lg font-bold text-gray-900 transition-all print:text-sm
-												{itemsProcesados.has(item.id)
-												? 'text-gray-400 line-through'
-												: ''}"
+												{itemsProcesados.has(item.id) ? 'text-gray-400 line-through' : ''}"
 										>
 											{item.nombre}
 										</span>
@@ -548,9 +553,7 @@
 												on:click|stopPropagation={() => toggleSubReceta(item.id)}
 											>
 												<span
-													class="transition-transform duration-200 {expandedSubRecetas.has(
-														item.id
-													)
+													class="transition-transform duration-200 {expandedSubRecetas.has(item.id)
 														? 'rotate-90'
 														: ''}"
 												>
@@ -558,7 +561,10 @@
 												</span>
 												Sub-Receta · ver desglose
 											</button>
-											<span class="hidden text-[8px] font-semibold text-gray-500 uppercase print:inline">SUB-RECETA</span>
+											<span
+												class="hidden text-[8px] font-semibold text-gray-500 uppercase print:inline"
+												>SUB-RECETA</span
+											>
 										{/if}
 									</div>
 								</div>
@@ -570,9 +576,7 @@
 									>
 										{(Math.round(item.cantidad * 100) / 100).toFixed(2)}
 									</span>
-									<span class="text-xs font-bold text-gray-500 uppercase"
-										>{item.unidad}</span
-									>
+									<span class="text-xs font-bold text-gray-500 uppercase">{item.unidad}</span>
 								</div>
 							</div>
 
@@ -583,27 +587,19 @@
 									class="border-t border-pink-100 bg-pink-50/40 px-5 py-3"
 								>
 									<div class="ml-14 space-y-1.5">
-										<span
-											class="text-[10px] font-black tracking-wider text-pink-400 uppercase"
-										>
+										<span class="text-[10px] font-black tracking-wider text-pink-400 uppercase">
 											Ingredientes de {item.nombre}
 										</span>
 										{#each getSubRecetaComposicion(item.nombre) as subItem}
 											<div class="flex items-center justify-between py-1">
 												<span class="text-sm text-gray-700">
-													{subItem.ingrediente?.nombre ||
-														subItem.sub_receta?.nombre ||
-														'?'}
+													{subItem.ingrediente?.nombre || subItem.sub_receta?.nombre || '?'}
 												</span>
 												<span class="text-sm font-bold text-gray-600 tabular-nums">
-													{(
-														Math.round(
-															(subItem.cantidad || 0) * factorEscala * 100
-														) / 100
-													).toFixed(2)}
-													<span class="text-xs font-normal text-gray-400"
-														>{subItem.unidad}</span
-													>
+													{(Math.round((subItem.cantidad || 0) * factorEscala * 100) / 100).toFixed(
+														2
+													)}
+													<span class="text-xs font-normal text-gray-400">{subItem.unidad}</span>
 												</span>
 											</div>
 										{:else}
@@ -626,19 +622,25 @@
 		<section
 			class="mt-10 rounded-2xl border-2 border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-6 print:mt-6 print:rounded-none print:border-gray-400 print:bg-transparent print:p-3"
 		>
-			<h3 class="mb-4 text-xs font-black tracking-[0.2em] text-indigo-400 uppercase print:text-black">
+			<h3
+				class="mb-4 text-xs font-black tracking-[0.2em] text-indigo-400 uppercase print:text-black"
+			>
 				💰 Resumen Financiero
 			</h3>
 			<div class="grid grid-cols-2 gap-4 md:grid-cols-4 print:grid-cols-4 print:gap-2">
 				<div>
 					<span class="block text-[10px] font-bold text-gray-400 uppercase">Costo Insumos</span>
-					<span class="text-lg font-black text-gray-900 print:text-sm">{formatCurrency(costoPrimo)}</span>
+					<span class="text-lg font-black text-gray-900 print:text-sm"
+						>{formatCurrency(costoPrimo)}</span
+					>
 				</div>
 				<div>
 					<span class="block text-[10px] font-bold text-gray-400 uppercase"
 						>COGS (+ CIF {recetaBase.porcentaje_cif || 0}%)</span
 					>
-					<span class="text-lg font-black text-indigo-600 print:text-sm print:text-black">{formatCurrency(costoTotal)}</span>
+					<span class="text-lg font-black text-indigo-600 print:text-sm print:text-black"
+						>{formatCurrency(costoTotal)}</span
+					>
 				</div>
 				<div>
 					<span class="block text-[10px] font-bold text-gray-400 uppercase">Precio Sugerido</span>
@@ -668,7 +670,9 @@
 				{guardando ? 'cursor-wait opacity-60' : ''}"
 		>
 			{#if guardando}
-				<span class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-indigo-300 border-t-indigo-700"></span>
+				<span
+					class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-indigo-300 border-t-indigo-700"
+				></span>
 				Guardando...
 			{:else if guardadoExitoso}
 				<span class="text-xl">✅</span>
@@ -685,15 +689,18 @@
 		<h3 class="mb-4 text-sm font-bold text-gray-400 uppercase print:text-black">
 			Observaciones y Control de Calidad
 		</h3>
-		<div
-			class="h-32 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 print:h-20 print:rounded-none print:border-gray-800 print:bg-white"
-		></div>
+		<textarea
+			bind:value={notas}
+			placeholder="Anotar observaciones de la producción, control de calidad, ajustes realizados..."
+			class="h-32 w-full resize-none rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-700 transition outline-none placeholder:text-gray-400 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 print:h-20 print:rounded-none print:border-gray-800 print:bg-white"
+		></textarea>
 	</div>
 
 	<!-- Print Footer -->
-	<div class="hidden print:block mt-4 pt-2 border-t border-gray-300 text-center">
+	<div class="mt-4 hidden border-t border-gray-300 pt-2 text-center print:block">
 		<p class="text-[8px] text-gray-400">
-			Victoria Cake · Smart Kitchen V2 · Generado {new Date().toLocaleDateString('es-CO')} · {recetaBase.nombre} · Molde {moldeSeleccionado}cm · {porcionesActuales} pax
+			Victoria Cake · Smart Kitchen V2 · Generado {new Date().toLocaleDateString('es-CO')} · {recetaBase.nombre}
+			· Molde {moldeSeleccionado}cm · {porcionesActuales} pax
 		</p>
 	</div>
 </div>
