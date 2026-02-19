@@ -8,6 +8,7 @@ export interface Ingrediente {
     precio: number;
     cantidad_por_precio: number;
     proveedor?: string;
+    proveedor_id?: string;      // FK → proveedores.id (Pro V3)
     categoria: string;
 
     // --- Smart Metrics (Feb 2026) ---
@@ -21,6 +22,23 @@ export interface CategoriaIngrediente {
     nombre: string;
     color: string;
     icono: string;
+}
+
+/** Junction N:N — Un ingrediente puede tener múltiples proveedores */
+export interface IngredienteProveedor {
+    id: string;
+    ingrediente_id: string;
+    proveedor_id: string;
+    precio: number;
+    cantidad_por_precio: number;
+    unidad: string;
+    es_principal: boolean;
+    notas?: string;
+    activo: boolean;
+    created_at?: string;
+    updated_at?: string;
+    // Expanded via join
+    proveedor?: { id: string; nombre: string; activo: boolean };
 }
 
 export interface Receta {
@@ -314,7 +332,17 @@ export function calcularCostoIngrediente(
  * Calcula el costo TOTAL de una receta navegando recursivamente su árbol de composición.
  * Soporta V1 (lista plana) y V2 (grafo).
  */
-export function calcularCostoReceta(receta: Receta): number {
+export function calcularCostoReceta(receta: Receta, visited: Set<string> = new Set()): number {
+    if (!receta) return 0;
+
+    // Cycle Detection
+    if (receta.id && visited.has(receta.id)) {
+        console.warn('Ciclo detectado en cálculo de costos:', receta.nombre);
+        return 0; // Romper ciclo
+    }
+    const newVisited = new Set(visited);
+    if (receta.id) newVisited.add(receta.id);
+
     if ((!receta.composicion || receta.composicion.length === 0) && receta.ingredientes) {
         return receta.ingredientes.reduce((total, item) => {
             return total + calcularCostoIngrediente(
@@ -337,8 +365,13 @@ export function calcularCostoReceta(receta: Receta): number {
                 item.ingrediente
             );
         } else if (item.sub_receta) {
-            const costoTotalSub = calcularCostoReceta(item.sub_receta);
-            const rendimientoSub = item.sub_receta.rendimiento_base_g || 1;
+            const costoTotalSub = calcularCostoReceta(item.sub_receta, newVisited);
+
+            // FIX: Usar peso simulado real en lugar de confiar en el dato estático de la DB
+            // Esto corrige errores donde rendimiento_base_g quedó desactualizado tras editar ingredientes
+            const pesoRealSub = calcularPesoReceta(item.sub_receta);
+            const rendimientoSub = pesoRealSub > 0 ? pesoRealSub : (item.sub_receta.rendimiento_base_g || 1);
+
             const costoPorGramo = costoTotalSub / rendimientoSub;
             costoItem = item.cantidad * costoPorGramo;
         }

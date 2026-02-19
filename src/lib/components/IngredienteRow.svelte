@@ -1,16 +1,41 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { fade } from 'svelte/transition';
-	import type { Ingrediente, CategoriaIngrediente } from '$lib/kitchen';
+	import { fade, slide } from 'svelte/transition';
+	import type { Ingrediente, CategoriaIngrediente, IngredienteProveedor } from '$lib/kitchen';
 
 	export let ingrediente: Ingrediente;
 	export let esNuevo = false;
 	export let uso = 0;
 	export let categorias: CategoriaIngrediente[] = [];
 
+	// Pro V3: proveedores y tendencia
+	interface ProveedorSimple {
+		id: string;
+		nombre: string;
+		activo: boolean;
+	}
+	interface UltimoCambio {
+		variacion_pct: number;
+		precio_anterior: number;
+		precio_nuevo: number;
+		created_at: string;
+	}
+	export let proveedores: ProveedorSimple[] = [];
+	export let ultimo_cambio: UltimoCambio | null = null;
+
+	// Multi-Proveedor N:N
+	export let proveedores_precios: IngredienteProveedor[] = [];
+
 	const dispatch = createEventDispatcher();
 	let editando = esNuevo;
 	let datos = { ...ingrediente };
+
+	// Estado mini-tabla proveedores
+	let mostrarAgregarProv = false;
+	let nuevoProvId = '';
+	let nuevoPrecio = 0;
+	let nuevaCantPrecio = 1000;
+	let nuevaUnidad = 'g';
 
 	// Reactive helper for badge display
 	$: categoriaActual = categorias.find((c) => c.nombre === ingrediente.categoria) || {
@@ -62,10 +87,100 @@
 	function handleCategoryChange() {
 		if (datos.categoria === 'nueva') {
 			dispatch('crearCategoria');
-			// Revertir selección para no quedarnos en "nueva"
 			datos.categoria = ingrediente.categoria || 'general';
 		}
 	}
+
+	// Multi-proveedor: Agregar
+	function agregarProveedor() {
+		if (!nuevoProvId || nuevoPrecio <= 0) return;
+		dispatch('agregarProveedor', {
+			ingrediente_id: ingrediente.id,
+			proveedor_id: nuevoProvId,
+			precio: nuevoPrecio,
+			cantidad_por_precio: nuevaCantPrecio,
+			unidad: nuevaUnidad,
+			es_principal: proveedores_precios.length === 0
+		});
+		mostrarAgregarProv = false;
+		nuevoProvId = '';
+		nuevoPrecio = 0;
+		nuevaCantPrecio = 1000;
+		nuevaUnidad = 'g';
+	}
+
+	function setPrincipal(jpId: string) {
+		dispatch('setPrincipal', { id: jpId, ingrediente_id: ingrediente.id });
+	}
+
+	function quitarProveedor(jpId: string) {
+		dispatch('quitarProveedor', { id: jpId, ingrediente_id: ingrediente.id });
+	}
+
+	function formatPrecioGramo(precio: number, cantidad: number, unidad: string): string {
+		if (!precio || !cantidad) return '-';
+
+		// Normalizar a unidad base
+		let baseQty = cantidad;
+		let baseUnit = unidad;
+
+		if (unidad === 'kg') {
+			baseQty = cantidad * 1000;
+			baseUnit = 'g';
+		} else if (unidad === 'lb') {
+			baseQty = cantidad * 500;
+			baseUnit = 'g';
+		} else if (unidad === 'lt') {
+			baseQty = cantidad * 1000;
+			baseUnit = 'ml';
+		}
+
+		if (baseQty <= 0) return '-';
+		const costPerUnit = precio / baseQty;
+
+		// Formato inteligente: si es muy pequeño (<1), mostrar 100g/100ml
+		if (costPerUnit < 1 && (baseUnit === 'g' || baseUnit === 'ml')) {
+			return `$${(costPerUnit * 1000).toFixed(0)}/kg`; // Mostrar por Kilo para legibilidad
+		}
+
+		return `$${costPerUnit.toFixed(1)}/${baseUnit}`;
+	}
+
+	// Mejor precio disponible (para el indicador 💡)
+	// Solo si es significativamente mejor (>1% diferencia) y no es el mismo
+	$: mejorPrecioJp =
+		proveedores_precios.length > 1
+			? proveedores_precios.reduce((best, jp) => {
+					const ppgBest = best.precio / (best.cantidad_por_precio || 1);
+					const ppgCurrent = jp.precio / (jp.cantidad_por_precio || 1);
+					return ppgCurrent < ppgBest ? jp : best;
+				})
+			: null;
+
+	$: principalJp = proveedores_precios.find((jp) => jp.es_principal);
+
+	$: hayMejorPrecio =
+		mejorPrecioJp &&
+		principalJp &&
+		mejorPrecioJp.id !== principalJp.id &&
+		mejorPrecioJp.precio / mejorPrecioJp.cantidad_por_precio <
+			(principalJp.precio / principalJp.cantidad_por_precio) * 0.99;
+
+	// Proveedores aún no asociados (para el select de agregar)
+	$: proveedoresDisponibles = proveedores.filter(
+		(p) => !proveedores_precios.some((jp) => jp.proveedor_id === p.id)
+	);
+
+	// Nombre del proveedor: Prioridad al principal de la junction (busco en lista global por ID por si jp.proveedor falta)
+	$: proveedorDelPrincipal = principalJp
+		? proveedores.find((p) => p.id === principalJp.proveedor_id)
+		: null;
+
+	$: proveedorNombre =
+		proveedorDelPrincipal?.nombre ||
+		principalJp?.proveedor?.nombre ||
+		proveedores.find((p) => p.id === ingrediente.proveedor_id)?.nombre ||
+		'';
 </script>
 
 <tr
@@ -101,21 +216,153 @@
 			</select>
 		</td>
 
-		<!-- Column 3: Precio -->
+		<!-- Column 3: Precio + Multi-Proveedor -->
 		<td
 			class="block w-full border-b border-pink-50 p-4 md:table-cell md:border-0 dark:border-gray-700"
 		>
-			<span class="mb-1 block text-xs font-bold text-pink-400 md:hidden">Precio</span>
+			<span class="mb-1 block text-xs font-bold text-pink-400 md:hidden">Precio & Proveedores</span>
+
+			<!-- Precio principal (solo lectura si hay proveedores en junction) -->
 			<div
 				class="flex min-w-[100px] items-center gap-1 rounded-xl border border-gray-300 bg-white px-3 py-2 focus-within:border-pink-500 focus-within:ring-2 focus-within:ring-pink-200 dark:border-gray-600 dark:bg-gray-800"
 			>
 				<span class="font-bold text-pink-500">$</span>
-				<input
-					type="number"
-					bind:value={datos.precio}
-					class="w-full bg-transparent text-sm font-bold outline-none dark:text-white"
-				/>
+				{#if proveedores_precios.length > 0}
+					<span
+						class="w-full text-sm font-bold text-gray-500 dark:text-gray-400"
+						title="Sincronizado desde proveedor principal ⭐">{datos.precio.toLocaleString()}</span
+					>
+					<span class="text-[9px] text-pink-400">🔒sync</span>
+				{:else}
+					<input
+						type="number"
+						bind:value={datos.precio}
+						class="w-full bg-transparent text-sm font-bold outline-none dark:text-white"
+					/>
+				{/if}
 			</div>
+
+			<!-- Mini-Tabla Proveedores -->
+			{#if !esNuevo}
+				<div
+					class="mt-2 rounded-lg border border-pink-200/50 bg-pink-50/30 p-2 dark:border-gray-600 dark:bg-gray-900/30"
+				>
+					<div class="mb-1 flex items-center justify-between">
+						<span class="text-[9px] font-bold text-pink-500 uppercase"
+							>🏪 Proveedores ({proveedores_precios.length})</span
+						>
+						{#if proveedoresDisponibles.length > 0}
+							<button
+								on:click={() => (mostrarAgregarProv = !mostrarAgregarProv)}
+								class="rounded-md bg-pink-100 px-2 py-0.5 text-[10px] font-bold text-pink-600 transition hover:bg-pink-200 dark:bg-pink-900/30 dark:text-pink-400"
+							>
+								{mostrarAgregarProv ? '✕' : '+ Agregar'}
+							</button>
+						{/if}
+					</div>
+
+					<!-- Lista de proveedores existentes -->
+					{#each proveedores_precios as jp (jp.id)}
+						<div
+							class="mt-1 flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[11px] transition
+								{jp.es_principal
+								? 'bg-amber-50 ring-1 ring-amber-300/50 dark:bg-amber-900/20 dark:ring-amber-700/30'
+								: 'hover:bg-white/50 dark:hover:bg-gray-800/50'}"
+							transition:slide|local={{ duration: 200 }}
+						>
+							<!-- Botón principal -->
+							<button
+								on:click={() => setPrincipal(jp.id)}
+								class="flex-shrink-0 text-sm transition hover:scale-125"
+								title={jp.es_principal ? 'Proveedor principal' : 'Marcar como principal'}
+							>
+								{jp.es_principal ? '⭐' : '☆'}
+							</button>
+
+							<!-- Info -->
+							<span class="flex-1 truncate font-medium text-gray-700 dark:text-gray-300">
+								{jp.proveedor?.nombre || '?'}
+							</span>
+							<span class="font-mono font-bold text-gray-800 dark:text-gray-200">
+								${jp.precio.toLocaleString()}
+							</span>
+							<span class="text-gray-400">
+								/{jp.cantidad_por_precio}{jp.unidad}
+							</span>
+							<span
+								class="rounded bg-gray-100 px-1 text-[9px] font-bold text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+							>
+								{formatPrecioGramo(jp.precio, jp.cantidad_por_precio, jp.unidad)}
+							</span>
+
+							<!-- Eliminar -->
+							{#if !jp.es_principal}
+								<button
+									on:click={() => quitarProveedor(jp.id)}
+									class="flex-shrink-0 text-red-400 transition hover:scale-125 hover:text-red-600"
+									title="Quitar proveedor">🗑️</button
+								>
+							{/if}
+						</div>
+					{/each}
+
+					<!-- Sin proveedores -->
+					{#if proveedores_precios.length === 0}
+						<p class="py-1 text-center text-[10px] text-gray-400">Sin proveedores asignados</p>
+					{/if}
+
+					<!-- Formulario agregar -->
+					{#if mostrarAgregarProv}
+						<div
+							class="mt-2 rounded-lg bg-white p-2 ring-1 ring-pink-200 dark:bg-gray-800 dark:ring-gray-600"
+							transition:slide|local={{ duration: 200 }}
+						>
+							<select
+								bind:value={nuevoProvId}
+								class="mb-1 w-full rounded border border-gray-200 px-2 py-1 text-[11px] dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+							>
+								<option value="">Seleccionar proveedor...</option>
+								{#each proveedoresDisponibles as prov}
+									<option value={prov.id}>🏪 {prov.nombre}</option>
+								{/each}
+							</select>
+							<div class="flex gap-1">
+								<div
+									class="flex items-center gap-0.5 rounded border border-gray-200 px-1 dark:border-gray-600"
+								>
+									<span class="text-[10px] text-pink-500">$</span>
+									<input
+										type="number"
+										bind:value={nuevoPrecio}
+										placeholder="Precio"
+										class="w-14 bg-transparent py-1 text-[11px] font-bold outline-none dark:text-white"
+									/>
+								</div>
+								<input
+									type="number"
+									bind:value={nuevaCantPrecio}
+									class="w-12 rounded border border-gray-200 px-1 py-1 text-center text-[11px] dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+								/>
+								<select
+									bind:value={nuevaUnidad}
+									class="rounded border border-gray-200 px-1 py-1 text-[11px] dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+								>
+									<option value="g">g</option>
+									<option value="ml">ml</option>
+									<option value="kg">kg</option>
+									<option value="unidad">ud</option>
+								</select>
+								<button
+									on:click={agregarProveedor}
+									disabled={!nuevoProvId || nuevoPrecio <= 0}
+									class="rounded bg-green-500 px-2 py-1 text-[10px] font-bold text-white transition hover:bg-green-600 disabled:opacity-30"
+									>✓</button
+								>
+							</div>
+						</div>
+					{/if}
+				</div>
+			{/if}
 		</td>
 
 		<!-- Column 4: Presentación & Conversión -->
@@ -270,11 +517,48 @@
 			class="block flex w-full items-center justify-between border-b border-pink-50 p-4 md:table-cell md:border-0 dark:border-gray-700"
 		>
 			<span class="text-xs font-bold text-gray-400 uppercase md:hidden">Precio</span>
-			<div
-				class="origin-right scale-110 transform font-mono font-bold text-gray-700 md:scale-100 dark:text-gray-300"
-			>
-				${ingrediente.precio.toLocaleString()}
+			<div class="flex items-center gap-2">
+				<button
+					on:click={() => dispatch('verHistorial', ingrediente.id)}
+					class="origin-right scale-110 transform cursor-pointer font-mono font-bold text-gray-700 transition hover:text-pink-600 md:scale-100 dark:text-gray-300 dark:hover:text-pink-400"
+					title="Click para ver historial de precios"
+				>
+					${ingrediente.precio.toLocaleString()}
+				</button>
+				{#if ultimo_cambio}
+					<span
+						class="rounded-md px-1.5 py-0.5 text-[10px] font-bold
+						{ultimo_cambio.variacion_pct > 0
+							? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+							: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'}"
+						title="Último cambio: ${ultimo_cambio.precio_anterior} → ${ultimo_cambio.precio_nuevo}"
+					>
+						{ultimo_cambio.variacion_pct > 0 ? '↑' : '↓'}
+						{Math.abs(ultimo_cambio.variacion_pct)}%
+					</span>
+				{/if}
 			</div>
+			{#if proveedorNombre}
+				<div class="mt-0.5 flex items-center gap-1">
+					<span class="text-[10px] text-gray-400 dark:text-gray-500">🏪 {proveedorNombre}</span>
+					{#if proveedores_precios.length > 1}
+						<span
+							class="rounded bg-pink-100 px-1 text-[9px] font-bold text-pink-500 dark:bg-pink-900/30"
+						>
+							+{proveedores_precios.length - 1}
+						</span>
+					{/if}
+				</div>
+			{/if}
+			{#if hayMejorPrecio && mejorPrecioJp}
+				<div class="mt-0.5 text-[9px] text-green-600 dark:text-green-400">
+					💡 {mejorPrecioJp.proveedor?.nombre} tiene {formatPrecioGramo(
+						mejorPrecioJp.precio,
+						mejorPrecioJp.cantidad_por_precio,
+						mejorPrecioJp.unidad
+					)}
+				</div>
+			{/if}
 		</td>
 		<td
 			class="block flex w-full items-center justify-between border-b border-pink-50 p-4 md:table-cell md:border-0 dark:border-gray-700"

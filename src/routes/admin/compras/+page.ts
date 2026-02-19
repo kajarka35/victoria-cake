@@ -10,23 +10,50 @@ export async function load() {
         { data: allRecetas, error: errR },
         { data: allComposicion, error: errC },
         { data: allIngredientes, error: errI },
-        { data: allHistorial, error: errH }
+        { data: allHistorial, error: errH },
+        { data: provData, error: errP }
     ] = await Promise.all([
         supabase.from('recetas').select('*').order('nombre'),
         supabase.from('recipe_composition').select('*'),
         supabase.from('ingredientes').select('*'),
-        supabase.from('produccion_historial').select('receta_id, receta_nombre').order('created_at', { ascending: false }).limit(50)
+        supabase.from('produccion_historial').select('receta_id, receta_nombre').order('created_at', { ascending: false }).limit(50),
+        // Cargar relación con proveedores principales para agrupar compras
+        supabase.from('ingrediente_proveedores')
+            .select('ingrediente_id, proveedor:proveedores(id, nombre)')
+            .eq('es_principal', true)
+
     ]);
 
-    if (errR) console.error(errR);
-    if (errC) console.error(errC);
-    if (errI) console.error(errI);
-    if (errH) console.error(errH);
+    if (errR) console.error("Error recetas:", errR);
+    if (errC) console.error("Error composicion:", errC);
+    if (errI) console.error("Error ingredientes:", errI);
+    if (errH) console.error("Error historial:", errH);
+
+    // Mapear proveedores principales
+    const proveedorMap = new Map<string, any>();
+    // @ts-ignore
+    const proveedoresData = provData;
+    if (proveedoresData) {
+        proveedoresData.forEach((p: any) => {
+            if (p.proveedor) {
+                proveedorMap.set(p.ingrediente_id, p.proveedor);
+            }
+        });
+    }
 
     // Armar el grafo en cliente
-    const mapIngredientes = new Map<string, Ingrediente>();
+    const mapIngredientes = new Map<string, Ingrediente & { proveedor_principal?: any }>();
     if (allIngredientes) {
-        allIngredientes.forEach(i => mapIngredientes.set(i.id, i));
+        allIngredientes.forEach(i => {
+            // Inyectamos el proveedor real de la junction table
+            const prov = proveedorMap.get(i.id);
+            mapIngredientes.set(i.id, {
+                ...i,
+                proveedor_principal: prov,
+                // Fallback visual para compatibilidad mientras se migra todo
+                proveedor: prov ? prov.nombre : (i.proveedor || 'Sin Asignar')
+            });
+        });
     }
 
     const mapRecetas = new Map<string, Receta>();

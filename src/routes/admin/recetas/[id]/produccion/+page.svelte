@@ -253,8 +253,8 @@
 
 <div class="print-container min-h-screen bg-white p-8 font-sans text-gray-900">
 	<!-- Header -->
-	<header
-		class="mb-6 flex flex-col items-start justify-between gap-4 border-b-4 border-gray-900 pb-6 md:flex-row md:items-center"
+	<div
+		class="mb-6 flex flex-col items-start justify-between gap-4 border-b-4 border-gray-900 pb-6 md:flex-row md:items-center print:flex"
 	>
 		<div class="flex items-start gap-5">
 			<!-- MEJORA 8: QR Code para print -->
@@ -264,11 +264,11 @@
 				class="hidden h-16 w-16 rounded border border-gray-200 print:block"
 			/>
 			<div>
-				<h1 class="text-3xl font-extrabold tracking-tight uppercase md:text-4xl">
+				<h1 class="text-3xl font-extrabold tracking-tight uppercase md:text-4xl print:text-2xl">
 					{recetaBase.nombre}
 				</h1>
-				<p class="text-lg text-gray-500">
-					Hoja de Producción · <span class="font-semibold text-pink-600"
+				<p class="text-lg text-gray-500 print:text-base">
+					Hoja de Producción · <span class="font-semibold text-pink-600 print:text-black"
 						>{porcionesActuales} pax</span
 					>
 				</p>
@@ -306,7 +306,7 @@
 			</div>
 
 			<div class="text-right">
-				<div class="text-3xl font-black">{moldeSeleccionado} cm</div>
+				<div class="text-3xl font-black print:text-xl">{moldeSeleccionado} cm</div>
 				<div class="text-sm font-medium text-gray-500 uppercase">Molde Final</div>
 			</div>
 
@@ -317,7 +317,7 @@
 				🖨️ Imprimir
 			</button>
 		</div>
-	</header>
+	</div>
 
 	<!-- Info Grid -->
 	<section class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-5 print:grid-cols-5 print:gap-2">

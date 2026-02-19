@@ -26,15 +26,24 @@
 
 	export let data;
 
-	let receta = data.receta as Receta;
-	// Composición combinada (Ingredientes + Sub-recetas)
-	let composicion = receta.composicion || [];
+	// Inicialización Segura (Evita error 'undefined' al renderizar)
+	let receta = data.receta || ({} as Receta);
+
+	// Reactividad: Actualizar si cambia la data (Navegación)
+	$: if (data.receta && data.receta.id !== receta.id) {
+		receta = data.receta;
+		porcionesActuales = receta.porciones_base || 0; // Resetear al valor original
+		modoEdicion = false;
+	}
+
+	$: composicion = receta.composicion || [];
 
 	let todosIngredientes = data.todosIngredientes as Ingrediente[];
 	let todasRecetas = data.todasRecetas as Receta[]; // Para selector de sub-recetas
 	let productos = data.productos;
 
-	let porcionesActuales = receta.porciones_base;
+	// Inicializar con valor seguro
+	let porcionesActuales = receta.porciones_base || 0;
 	let modoEdicion = false;
 
 	// Estado para agregar Item
@@ -566,9 +575,13 @@
 														{item.sub_receta.nombre} 🔗
 													</a>
 												{:else}
-													<span class="text-sm font-bold text-gray-800 dark:text-gray-200"
-														>{item.ingrediente?.nombre}</span
+													<a
+														href="/admin/ingredientes?search={item.ingrediente?.nombre}"
+														class="text-sm font-bold text-gray-800 transition-colors hover:text-pink-600 hover:underline dark:text-gray-200 dark:hover:text-pink-400"
+														title="Ir al detalle del insumo"
 													>
+														{item.ingrediente?.nombre} ↗
+													</a>
 												{/if}
 												<span
 													class="text-[9px] font-black tracking-tighter text-gray-400 uppercase"
@@ -608,7 +621,9 @@
 										{formatCurrency(
 											item.sub_receta
 												? (calcularCostoReceta(item.sub_receta) /
-														(item.sub_receta.rendimiento_base_g || 1)) *
+														(calcularPesoReceta(item.sub_receta) ||
+															item.sub_receta.rendimiento_base_g ||
+															1)) *
 														(item.cantidad * factorEscalado)
 												: item.ingrediente
 													? calcularCostoIngrediente(

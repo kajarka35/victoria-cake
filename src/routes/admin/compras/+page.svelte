@@ -25,8 +25,12 @@
 	let cantidadInput = 1;
 
 	// Estado: Lista de Compras
+	interface IngredienteConProveedor extends Ingrediente {
+		proveedor_principal?: { nombre: string; id: string };
+	}
+
 	interface ItemCompra {
-		ingrediente: Ingrediente;
+		ingrediente: IngredienteConProveedor;
 		cantidadNeta: number; // Cantidad requerida en receta
 		cantidadCompra: number; // Cantidad ajustada por merma
 		unidadesCompra: number; // Cantidad en unidades de compra (paquetes/latas)
@@ -122,8 +126,8 @@
 
 		// 3. Ordenar: Proveedor > Categoría > Nombre
 		nuevaLista.sort((a, b) => {
-			const provA = a.ingrediente.proveedor || 'Z_General';
-			const provB = b.ingrediente.proveedor || 'Z_General';
+			const provA = a.ingrediente.proveedor_principal?.nombre || 'Sin Asignar';
+			const provB = b.ingrediente.proveedor_principal?.nombre || 'Sin Asignar';
 			if (provA !== provB) return provA.localeCompare(provB);
 
 			if (a.ingrediente.categoria !== b.ingrediente.categoria)
@@ -132,6 +136,35 @@
 		});
 
 		listaCompras = nuevaLista;
+	}
+
+	// Helper para obtener nombre del proveedor de un item
+	function getProveedorNombre(item: ItemCompra): string {
+		return item.ingrediente.proveedor_principal?.nombre || 'Sin Asignar';
+	}
+
+	// Helper para calcular subtotal de un grupo (proveedor)
+	function calcularSubtotalProveedor(nombreProveedor: string): number {
+		return listaCompras
+			.filter((i) => getProveedorNombre(i) === nombreProveedor)
+			.reduce((sum, item) => sum + item.costoEstimado, 0);
+	}
+
+	// Generar mensaje de WhatsApp para el proveedor
+	function generarPedidoWhatsApp(nombreProveedor: string) {
+		const items = listaCompras.filter(
+			(i) => getProveedorNombre(i) === nombreProveedor && !i.checked
+		);
+		if (items.length === 0) return alert('No hay items pendientes para este proveedor');
+
+		let msg = `*Hola ${nombreProveedor}, necesito el siguiente pedido:*\n\n`;
+		items.forEach((i) => {
+			msg += `- ${Math.ceil(i.unidadesCompra)} und de ${i.ingrediente.nombre} (${i.ingrediente.cantidad_por_precio}${i.ingrediente.unidad})\n`;
+		});
+		msg += `\nGracias!`;
+
+		// Copiar al portapapeles o abrir link
+		navigator.clipboard.writeText(msg).then(() => alert('Pedido copiado al portapapeles!'));
 	}
 
 	function agregarSeleccion(rId: string = '', cant: number = 0) {
@@ -296,10 +329,11 @@
 				<!-- Formulario Agregar -->
 				<div class="mb-6 space-y-3 rounded-xl bg-gray-50 p-4 dark:bg-gray-700/50">
 					<div>
-						<label class="mb-1 block text-xs font-bold text-gray-500 uppercase"
+						<label class="mb-1 block text-xs font-bold text-gray-500 uppercase" for="recetaSelect"
 							>Agregar Receta</label
 						>
 						<select
+							id="recetaSelect"
 							bind:value={recetaSeleccionadaId}
 							class="w-full rounded-lg border-gray-200 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
 						>
@@ -311,8 +345,12 @@
 					</div>
 					<div class="flex gap-2">
 						<div class="flex-1">
-							<label class="mb-1 block text-xs font-bold text-gray-500 uppercase">Cantidad</label>
+							<label
+								class="mb-1 block text-xs font-bold text-gray-500 uppercase"
+								for="cantidadInput">Cantidad</label
+							>
 							<input
+								id="cantidadInput"
 								type="number"
 								bind:value={cantidadInput}
 								min="0.1"
@@ -420,14 +458,48 @@
 							</thead>
 							<tbody class="divide-y divide-gray-100 dark:divide-gray-700">
 								{#each listaCompras as item, i}
-									<!-- Separador de Categoría -->
-									{#if i === 0 || item.ingrediente.categoria !== listaCompras[i - 1].ingrediente.categoria}
-										<tr class="bg-indigo-50/50 dark:bg-gray-900/30">
+									<!-- Separador de Proveedor (Grupo) -->
+									{#if i === 0 || getProveedorNombre(item) !== getProveedorNombre(listaCompras[i - 1])}
+										{@const currentProv = getProveedorNombre(item)}
+										<tr
+											class="border-t-4 border-white bg-indigo-50/80 dark:border-gray-900 dark:bg-gray-800"
+										>
+											<td
+												colspan="2"
+												class="px-4 py-3 text-sm font-black tracking-wide text-indigo-800 uppercase dark:text-indigo-300"
+											>
+												<div class="flex items-center gap-2">
+													<span class="text-xl">🏪</span>
+													{currentProv}
+												</div>
+											</td>
+											<td colspan="2" class="px-4 py-3 text-right">
+												<div class="flex items-center justify-end gap-4">
+													<span class="text-xs font-bold text-gray-500"
+														>Subtotal: {formatCurrency(
+															calcularSubtotalProveedor(currentProv)
+														)}</span
+													>
+													<button
+														on:click={() => generarPedidoWhatsApp(currentProv)}
+														class="flex items-center gap-1 rounded-full bg-green-500 px-3 py-1 text-[10px] font-bold text-white shadow-sm hover:bg-green-600"
+														title="Copiar pedido al portapapeles"
+													>
+														<span>💬</span> Pedir
+													</button>
+												</div>
+											</td>
+										</tr>
+									{/if}
+
+									<!-- Separador de Categoría (Sub-grupo) -->
+									{#if i === 0 || getProveedorNombre(item) !== getProveedorNombre(listaCompras[i - 1]) || item.ingrediente.categoria !== listaCompras[i - 1].ingrediente.categoria}
+										<tr class="bg-gray-50/50 dark:bg-gray-900/20">
 											<td
 												colspan="4"
-												class="px-4 py-2 text-xs font-black tracking-widest text-indigo-400 uppercase"
+												class="px-4 py-1 text-[10px] font-bold tracking-widest text-gray-400 uppercase"
 											>
-												<span class="mr-2 text-base">{catEmoji(item.ingrediente.categoria)}</span>
+												<span class="mr-1 text-xs">{catEmoji(item.ingrediente.categoria)}</span>
 												{item.ingrediente.categoria}
 											</td>
 										</tr>
@@ -456,22 +528,11 @@
 											>
 												{item.ingrediente.nombre}
 											</div>
-											{#if item.ingrediente.proveedor}
-												<div class="mt-0.5 flex items-center gap-2">
-													<div
-														class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold text-gray-500 dark:bg-gray-700 dark:text-gray-400"
-													>
-														🏪 {item.ingrediente.proveedor}
-													</div>
-													{#if item.unidadesCompra >= 1.01}
-														<div
-															class="rounded bg-orange-50 px-1.5 py-0.5 text-[10px] font-semibold text-orange-500 dark:bg-orange-900/20"
-														>
-															📦 {Math.ceil(item.unidadesCompra)} un. x {item.ingrediente
-																.cantidad_por_precio}
-															{item.ingrediente.unidad}
-														</div>
-													{/if}
+											<!-- Mostrar empaque solo si es relevante (compra > 1 unidad) -->
+											{#if item.unidadesCompra >= 1.01}
+												<div class="mt-0.5 text-[10px] text-gray-500">
+													📦 {Math.ceil(item.unidadesCompra)} un. x {item.ingrediente
+														.cantidad_por_precio}{item.ingrediente.unidad}
 												</div>
 											{/if}
 										</td>
